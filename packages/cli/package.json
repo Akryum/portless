@@ -1,16 +1,20 @@
 {
-  "name": "@portless/http-proxy",
+  "name": "@portless/cli",
   "version": "0.1.0",
-  "description": "",
+  "description": "Easy local domains and reverse proxy with HTTPS support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Guillaume Chau",
   "license": "MIT",
+  "keywords": [
+    "https",
+    "localhost"
+  ],
   "publishConfig": {
     "access": "public"
   },
   "bin": {
-    "http-proxy": "dist/bin.js"
+    "portless": "dist/bin.js"
   },
   "scripts": {
     "build": "rimraf ./dist && tsc -d && chmod u+x dist/bin.js",
