@@ -6,6 +6,7 @@ export interface PortlessConfig {
   domains?: DomainConfig[]
   targetProxy?: string
   greenlock?: GreenlockConfig
+  ngrok?: NgrokConfig
 }
 
 export interface ReverseProxyConfig {
@@ -28,6 +29,11 @@ export interface GreenlockConfig {
   maintainerEmail: string
   /** Use Let's encrypt staging server */
   staging?: boolean
+}
+
+export interface NgrokConfig {
+  authtoken: string
+  region: 'us' | 'eu' | 'au' | 'ap'
 }
 
 export async function loadConfig (): Promise<PortlessConfig> {

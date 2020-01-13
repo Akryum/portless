@@ -25,10 +25,12 @@
     "@portless/config": "^0.1.0",
     "@portless/template": "^0.1.0",
     "cac": "^6.5.3",
+    "chalk": "^3.0.0",
     "consola": "^2.11.3",
     "fs-extra": "^8.1.0",
     "greenlock": "^4.0.3",
     "http-proxy": "^1.18.0",
+    "ngrok": "^3.2.7",
     "pac-proxy-agent": "^3.0.1"
   },
   "devDependencies": {

@@ -56,6 +56,12 @@ module.exports = {
     // Use Let's Encrypt staging servers
     staging: true,
   },
+
+  // Enable ngrok
+  ngrok: {
+    authtoken: '...',
+    region: 'eu',
+  },
 }
 ```
 

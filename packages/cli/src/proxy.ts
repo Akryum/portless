@@ -2,14 +2,13 @@ import http, { IncomingMessage } from 'http'
 import httpProxy from 'http-proxy'
 import PacProxyAgent from 'pac-proxy-agent'
 import consola from 'consola'
+import chalk from 'chalk'
 import path from 'path'
 import { renderTemplate } from '@portless/template'
 import { PortlessConfig, ProxyRedirectConfig } from '@portless/config/src'
 import { escapeReg } from './util/reg'
 import { getDomain } from './util/domain'
-
-// fix ssl localhost
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+import { addNgrokTunnel } from './ngrok'
 
 const acmeChallengePath = '/.well-known/acme-challenge/'
 
@@ -18,8 +17,12 @@ export async function setupReverseProxy (config: PortlessConfig, publicKeyId?: s
 
   const pacProxyAgent = config.targetProxy ? new PacProxyAgent(config.targetProxy) : undefined
 
-  function proxyTarget (redirect: ProxyRedirectConfig) {
+  async function proxyTarget (redirect: ProxyRedirectConfig) {
     const { port, target } = redirect
+
+    const localUrl = `localhost:${port}`
+
+    const domain = config.domains ? config.domains.find(d => d.targetUrl === target) : undefined
 
     const proxy = httpProxy.createProxyServer({
       target,
@@ -163,14 +166,17 @@ export async function setupReverseProxy (config: PortlessConfig, publicKeyId?: s
     })
 
     server.listen(port)
-    consola.success(port, '=>', target)
+    consola.success(chalk.blue('Proxy'), localUrl, '=>', target)
+
+    if (config.ngrok && domain && domain.publicUrl !== undefined) {
+      await addNgrokTunnel(config, {
+        targetUrl: localUrl,
+        publicUrl: domain.publicUrl,
+      })
+    }
   }
 
   for (const redirect of config.reverseProxy.redirects) {
-    proxyTarget(redirect)
-  }
-
-  return {
-    proxyTarget,
+    await proxyTarget(redirect)
   }
 }
