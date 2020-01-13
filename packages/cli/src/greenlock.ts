@@ -47,8 +47,26 @@ export async function setupGreenlock (config: PortlessConfig): Promise<Greenlock
         consola.error(details)
       } else if (event === 'warning') {
         consola.warn(details)
+      } else if (event === 'certificate_order') {
+        consola.info('Ordering certificate...', details.subject, details.altnames)
+      } else if (event === 'challenge_select') {
+        consola.info('Challenging', details.altname)
+      } else if (event === 'challenge_status') {
+        if (details.status === 'pending') {
+          consola.info('Challenge pending', details.altname)
+        } else if (details.status === 'valid') {
+          consola.success(chalk.green('Challenge valid'), details.altname)
+        } else {
+          consola.info('Challenge status', details)
+        }
+      } else if (event === 'certificate_status') {
+        if (details.status === 'valid') {
+          consola.success(chalk.green('Certificate valid'), details.subject)
+        } else {
+          consola.info('Challenge status', details)
+        }
       } else if (event === 'cert_issue') {
-        consola.info(chalk.blue(event), details)
+        consola.success(chalk.green('Certificate issued'), details)
         restartNgrokTunnels()
       } else {
         consola.info(chalk.blue(event), details)
