@@ -60,6 +60,7 @@ export async function setupGreenlock (config: PortlessConfig): Promise<Greenlock
   await greenlock.manager.defaults({
     subscriberEmail: options.maintainerEmail,
     agreeToTerms: true,
+    directoryUrl: options.staging ? 'https://acme-staging-v02.api.letsencrypt.org/directory' : 'https://acme-v02.api.letsencrypt.org/directory',
   })
 
   await greenlock.add(site)
