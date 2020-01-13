@@ -12,7 +12,7 @@ export interface TunnelConfig {
   targetUrl: string
 }
 
-const tunnels: TunnelConfig[] = []
+let tunnels: TunnelConfig[] = []
 let lastConfig: PortlessConfig
 
 export async function addNgrokTunnel (config: PortlessConfig, tunnel: TunnelConfig) {
@@ -24,7 +24,7 @@ export async function addNgrokTunnel (config: PortlessConfig, tunnel: TunnelConf
   const firstPublicDomain: string = firstPublicDomainConfig.publicUrl as string
 
   const configDir = getRcFolder('greenlock-config')
-  const certDir = path.resolve(configDir, 'live', getDomain(firstPublicDomain))
+  const certDir = path.resolve(configDir, config.greenlock?.staging ? 'staging' : 'live', getDomain(firstPublicDomain))
   const keyFile = path.resolve(certDir, 'privkey.pem')
   const certFile = path.resolve(certDir, 'cert.pem')
 
@@ -55,17 +55,21 @@ export async function addNgrokTunnel (config: PortlessConfig, tunnel: TunnelConf
   }
 }
 
-let restarted = false
+let restarting = false
 
 export async function restartNgrokTunnels () {
-  if (!lastConfig || restarted) return
-  restarted = true
+  if (!lastConfig || restarting) return
+  restarting = true
 
   consola.info('Restarting Ngrok tunnels with new certificate...')
 
-  await ngrok.kill()
+  const lastTunnels = tunnels.slice()
+  await ngrok.disconnect()
+  tunnels = []
 
-  for (const tunnel of tunnels) {
+  for (const tunnel of lastTunnels) {
     await addNgrokTunnel(lastConfig, tunnel)
   }
+
+  restarting = false
 }

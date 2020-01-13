@@ -7,6 +7,7 @@ import { PortlessConfig } from '@portless/config'
 import { getDomain } from './util/domain'
 import { getRcFolder } from './util/rc-folder'
 import { restartNgrokTunnels } from './ngrok'
+import { wait } from './util/wait'
 
 export interface GreenlockInfo {
   publicKeyId?: string
@@ -46,11 +47,9 @@ export async function setupGreenlock (config: PortlessConfig): Promise<Greenlock
         consola.error(details)
       } else if (event === 'warning') {
         consola.warn(details)
-      } else if (event === 'certificate_status') {
+      } else if (event === 'cert_issue') {
         consola.info(chalk.blue(event), details)
-        if (details.status === 'valid') {
-          restartNgrokTunnels()
-        }
+        restartNgrokTunnels()
       } else {
         consola.info(chalk.blue(event), details)
       }
@@ -81,10 +80,4 @@ export async function setupGreenlock (config: PortlessConfig): Promise<Greenlock
   return {
     publicKeyId,
   }
-}
-
-function wait (ms: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
 }
