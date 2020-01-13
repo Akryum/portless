@@ -2,7 +2,7 @@
   "compilerOptions": {
     "composite": true,
     "sourceMap": true,
-    "target": "esnext",
+    "target": "ES2018",
     "module": "CommonJS",
     "moduleResolution": "node",
     "allowJs": false,
