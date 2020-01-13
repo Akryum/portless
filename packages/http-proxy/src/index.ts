@@ -1,11 +1,9 @@
 import { loadConfig } from '@portless/config'
-import { proxyTarget } from './proxy'
+import { setupReverseProxy } from './proxy'
+import { setupGreenlock } from './greenlock'
 
 export async function startProxy () {
   const config = await loadConfig()
-  if (config.proxy) {
-    for (const redirect of config.proxy.redirects) {
-      proxyTarget(redirect.port, redirect.target)
-    }
-  }
+  const { publicKeyId } = await setupGreenlock(config)
+  await setupReverseProxy(config, publicKeyId)
 }

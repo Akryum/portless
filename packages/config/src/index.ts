@@ -1,16 +1,33 @@
 import { cosmiconfig } from 'cosmiconfig'
 
 export interface PortlessConfig {
-  proxy?: ProxyConfig
+  projectName: string
+  reverseProxy?: ReverseProxyConfig
+  domains?: DomainConfig[]
+  targetProxy?: string
+  greenlock?: GreenlockConfig
 }
 
-export interface ProxyConfig {
+export interface ReverseProxyConfig {
   redirects: ProxyRedirectConfig[]
 }
 
 export interface ProxyRedirectConfig {
   port: number
   target: string
+}
+
+export interface DomainConfig {
+  publicUrl?: string
+  localUrl?: string
+  targetUrl: string
+}
+
+export interface GreenlockConfig {
+  packageAgent: string
+  maintainerEmail: string
+  /** Use Let's encrypt staging server */
+  staging?: boolean
 }
 
 export async function loadConfig (): Promise<PortlessConfig> {
