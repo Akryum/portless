@@ -55,10 +55,15 @@ export async function addNgrokTunnel (config: PortlessConfig, tunnel: TunnelConf
   }
 }
 
-export async function restartNgrokTunnels () {
-  if (!lastConfig) return
+let restarted = false
 
-  await ngrok.disconnect()
+export async function restartNgrokTunnels () {
+  if (!lastConfig || restarted) return
+  restarted = true
+
+  consola.info('Restarting Ngrok tunnels with new certificate...')
+
+  await ngrok.kill()
 
   for (const tunnel of tunnels) {
     await addNgrokTunnel(lastConfig, tunnel)
