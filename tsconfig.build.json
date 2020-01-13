@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "composite": true,
+  },
+  "files": [],
+  "include": [],
+  "references": [
+    { "path": "./packages/config" },
+    { "path": "./packages/template" },
+    { "path": "./packages/http-proxy" },
+  ],
+}

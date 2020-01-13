@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "sourceMap": true,
+    "target": "esnext",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "allowJs": false,
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "removeComments": false,
+    "types": [
+      "node",
+      "@types/jest"
+    ],
+    "baseUrl": ".",
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+}

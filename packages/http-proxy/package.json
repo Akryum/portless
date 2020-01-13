@@ -1,0 +1,40 @@
+{
+  "name": "@portless/http-proxy",
+  "version": "0.1.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": "Guillaume Chau",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "http-proxy": "dist/bin.js"
+  },
+  "scripts": {
+    "build": "rimraf ./dist && tsc -d && chmod u+x dist/bin.js",
+    "prepublishOnly": "yarn build",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@portless/config": "^0.1.0",
+    "@portless/template": "^0.1.0",
+    "cac": "^6.5.3",
+    "consola": "^2.11.3",
+    "http-proxy": "^1.18.0",
+    "pac-proxy-agent": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/http-proxy": "^1.17.2",
+    "@types/jest": "^22.2.3",
+    "jest": "^24.9.0",
+    "rimraf": "^3.0.0",
+    "ts-jest": "^24.2.0",
+    "typescript": "^3.4.3"
+  },
+  "files": [
+    "dist/**/*",
+    "templates/**/*"
+  ]
+}

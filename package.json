@@ -1,0 +1,28 @@
+{
+  "name": "portless",
+  "version": "0.1.0",
+  "description": "",
+  "author": "Guillaume Chau",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "tsc --build tsconfig.build.json",
+    "build:clean": "yarn run build --clean"
+  },
+  "devDependencies": {
+    "@types/node": "^13.0.0",
+    "@typescript-eslint/eslint-plugin": "^2.0.0",
+    "@typescript-eslint/parser": "^2.14.0",
+    "eslint": "^6.0.0",
+    "eslint-config-standard": "^14.0.0",
+    "eslint-plugin-import": "^2.0.0",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-promise": "^4.0.0",
+    "eslint-plugin-standard": "^4.0.0",
+    "lerna": "^3.20.2",
+    "monorepo-run": "^0.4.2"
+  }
+}
