@@ -5,7 +5,7 @@ import { startProxy } from '.'
 
 const cli = cac()
 
-cli.command('start', 'Start HTTP proxy')
+cli.command('serve', 'Start HTTP proxy')
   .action(async () => {
     await startProxy()
   })
