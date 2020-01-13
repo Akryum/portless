@@ -7,6 +7,6 @@
   "references": [
     { "path": "./packages/config" },
     { "path": "./packages/template" },
-    { "path": "./packages/http-proxy" },
+    { "path": "./packages/cli" },
   ],
 }
