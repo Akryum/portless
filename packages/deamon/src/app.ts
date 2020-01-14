@@ -4,6 +4,7 @@ import { loadGlobalConfig, saveGlobalConfig } from '@portless/global-config'
 import { UseGreenlock, useGreenlock } from './greenlock'
 import { UseReverseProxy, useReverseProxy } from './proxy'
 import { UseNgrok, useNgrok } from './ngrok'
+import { addAutoReverseProxy } from './auto-proxy'
 
 export class App {
   config: PortlessConfig
@@ -13,6 +14,7 @@ export class App {
 
   async start (cwd: string) {
     this.config = await loadConfig(cwd)
+    await addAutoReverseProxy(this.config)
     this.greenlock = await useGreenlock(this.config)
     if (this.config.ngrok) {
       this.ngrok = await useNgrok(this.config)

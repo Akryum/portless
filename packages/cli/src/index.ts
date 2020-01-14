@@ -1,2 +1,2 @@
-export * from './server'
+export * from './daemon'
 export * from './app'

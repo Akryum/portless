@@ -2,11 +2,17 @@ import http from 'http'
 import express from 'express'
 import bodyParser from 'body-parser'
 import { getPortPromise } from 'portfinder'
+import fs from 'fs-extra'
 import consola from 'consola'
 import { loadGlobalConfig } from '@portless/global-config'
 import { addApp, stopAllApps, restartApp, getAppByCwd, removeApp, restoreApps } from './app'
+import { getRcFile } from '@portless/util'
 
 export async function startServer () {
+  /** Exposes the actual port where the server is listening */
+  const portFile = getRcFile('port.json')
+  const portData = fs.existsSync(portFile) ? await fs.readJson(portFile) : null
+
   const config = await loadGlobalConfig()
   const port = await getPortPromise({
     port: config.port,
@@ -15,6 +21,10 @@ export async function startServer () {
   const app = express()
 
   app.use(bodyParser.json())
+  
+  app.get('/.well-known/status', (req, res) => {
+    res.json({ status: 'live' })
+  })
 
   app.post('/api/stop', async (req, res) => {
     await stopAllApps()
@@ -64,5 +74,13 @@ export async function startServer () {
     consola.info('Deamon server listening on', `${host}:${port}`)
 
     await restoreApps()
+
+    if (portData) {
+      await fs.writeJson(portFile, {
+        ...portData,
+        liveVersion: portData.requestVersion,
+        port,
+      })
+    }  
   })
 }

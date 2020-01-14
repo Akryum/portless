@@ -26,7 +26,10 @@
     "@portless/global-config": "^0.1.0",
     "@portless/util": "^0.1.0",
     "cac": "^6.5.4",
-    "node-fetch": "^2.6.0"
+    "consola": "^2.11.3",
+    "fs-extra": "^8.1.0",
+    "node-fetch": "^2.6.0",
+    "user-startup": "^0.2.2"
   },
   "devDependencies": {
     "@types/node-fetch": "^2.5.4"

@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 
 import cac from 'cac'
-import { startServer, stopServer } from './server'
+import { startDaemon, stopDaemon } from './daemon'
 import { addApp, removeApp, restartApp } from './app'
 
 const cli = cac()
 
 cli.command('start', 'Start Deamon')
   .action(async () => {
-    await startServer()
+    await startDaemon()
   })
 
 cli.command('stop', 'Stop Deamon')
   .action(async () => {
-    await stopServer()
+    await stopDaemon()
   })
 
 cli.command('add', 'Add project in current folder')
