@@ -3,16 +3,13 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import { getPortPromise } from 'portfinder'
 import consola from 'consola'
-import { updateGlobalConfig, loadGlobalConfig } from '@portless/global-config'
+import { loadGlobalConfig } from '@portless/global-config'
 import { addApp, stopAllApps, restartApp, getAppByCwd, removeApp, restoreApps } from './app'
 
 export async function startServer () {
   const config = await loadGlobalConfig()
   const port = await getPortPromise({
     port: config.port,
-  })
-  await updateGlobalConfig({
-    port,
   })
 
   const app = express()
