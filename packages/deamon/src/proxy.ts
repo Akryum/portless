@@ -32,7 +32,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
   async function proxyTarget (redirect: ProxyRedirectConfig) {
     const { port, target } = redirect
 
-    const proxyUrl = `0.0.0.0:${port}`
+    const proxyUrl = `localhost:${port}`
 
     const domain = config.domains ? config.domains.find(d => d.targetUrl === target) : undefined
 
@@ -179,7 +179,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
       proxy.ws(req, socket, head)
     })
 
-    server.listen(port, '0.0.0.0', () => {
+    server.listen(port, 'localhost', () => {
       consola.success(chalk.blue('Proxy'), proxyUrl, '=>', target)
 
       if (domain && domain.publicUrl !== undefined) {

@@ -17,7 +17,7 @@ export interface GlobalAppConfig {
 
 export const DEFAULT_GLOBAL_CONFIG = {
   port: 5656,
-  host: '0.0.0.0',
+  host: 'localhost',
 }
 
 const globalConfigFile = getRcFile('config.json')

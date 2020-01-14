@@ -13,7 +13,7 @@ export async function startDaemon () {
   let requestVersion: string | undefined
   const config = await loadGlobalConfig()
 
-  const host = config.host || '0.0.0.0'
+  const host = config.host || 'localhost'
   let port = config.port
 
   if (!checkServerIsLive(port, host)) {
