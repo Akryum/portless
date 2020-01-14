@@ -11,5 +11,5 @@ cli.command('serve', 'Start HTTP proxy')
   })
 
 cli.help()
-
+cli.version(require('../package.json').version)
 cli.parse()
