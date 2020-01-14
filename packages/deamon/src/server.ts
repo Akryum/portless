@@ -114,7 +114,15 @@ export async function startServer () {
     }  
   })
 
-  server.on('upgrade', () => {
-
+  server.on('upgrade', (req, socket, head) => {
+    const host = req.get('host')
+    if (host) {
+      const proxy = getProxy(host)
+      if (proxy) {
+        consola.log(`${req.protocol}://${host}${req.path}`, chalk.cyan('PROXY'), proxy.targetDomain)
+        proxy.wsMiddleware(req, socket, head)
+        return
+      }
+    }
   })
 }
