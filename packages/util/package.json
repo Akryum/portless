@@ -1,0 +1,32 @@
+{
+  "name": "@portless/util",
+  "version": "0.1.0",
+  "description": "(Shared utils) Easy local domains and reverse proxy with HTTPS support",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": "Guillaume Chau",
+  "license": "MIT",
+  "keywords": [
+    "https",
+    "localhost"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rimraf ./dist && tsc -d",
+    "prepublishOnly": "yarn build",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@portless/config": "^0.1.0",
+    "fs-extra": "^8.1.0"
+  },
+  "devDependencies": {
+    "rimraf": "^3.0.0",
+    "typescript": "^3.4.3"
+  },
+  "files": [
+    "dist/**/*"
+  ]
+}

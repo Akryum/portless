@@ -3,9 +3,8 @@ import fs from 'fs-extra'
 import ngrok from 'ngrok'
 import consola from 'consola'
 import chalk from 'chalk'
-import { PortlessConfig } from '@portless/config/src'
-import { getRcFolder } from './util/rc-folder'
-import { getDomain } from './util/domain'
+import { PortlessConfig } from '@portless/config'
+import { getRcFolder, getDomain } from '@portless/util'
 
 export interface TunnelConfig {
   publicUrl: string

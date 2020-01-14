@@ -5,8 +5,10 @@
   "files": [],
   "include": [],
   "references": [
+    { "path": "./packages/util" },
     { "path": "./packages/config" },
     { "path": "./packages/template" },
     { "path": "./packages/cli" },
+    { "path": "./packages/deamon" },
   ],
 }

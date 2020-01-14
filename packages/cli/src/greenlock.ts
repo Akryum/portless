@@ -4,10 +4,8 @@ import chalk from 'chalk'
 import fs from 'fs-extra'
 import path from 'path'
 import { PortlessConfig } from '@portless/config'
-import { getDomain } from './util/domain'
-import { getRcFolder } from './util/rc-folder'
+import { getDomain, getRcFolder, wait } from '@portless/util'
 import { restartNgrokTunnels } from './ngrok'
-import { wait } from './util/wait'
 
 export interface GreenlockInfo {
   publicKeyId?: string
