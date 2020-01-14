@@ -14,17 +14,36 @@ export interface ReverseProxyOptions {
   publicKeyId?: string
 }
 
-export type PublicUrlCallback = (targetUrl: string, publicUrl: string) => void
+export type IncomingDomainType = 'public' | 'local'
 
 export interface ReverseProxy {
   targetDomain: string
-  incomingDomains: string[]
+  incomingDomains: { domain: string, type: IncomingDomainType }[]
   webMiddleware: (req: IncomingMessage, res: ServerResponse) => Promise<void> | void
   wsMiddleware: (req: IncomingMessage, socker: any, head: any) => Promise<void> | void
 }
 
 const proxies: ReverseProxy[] = []
 const domainMap: { [key: string]: ReverseProxy } = {}
+
+class Replacer {
+  regValues: string[] = []
+  reg: RegExp
+  map: { [key: string]: string } = {}
+
+  add (fromUrl: string, toUrl: string) {
+    this.regValues.push(escapeReg(fromUrl))
+    this.map[fromUrl] = toUrl
+  }
+
+  build () {
+    this.reg = new RegExp(`(${this.regValues.join('|')})`, 'g')
+  }
+
+  replace (text: string) {
+    return text.replace(this.reg, (matched) => this.map[matched])
+  }
+}
 
 export async function useReverseProxy (config: PortlessConfig, options: ReverseProxyOptions = {}) {
   if (!config.domains) return null
@@ -69,31 +88,49 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
     })
 
     // Rewrite URL in responses
-    let replaceReg: RegExp
-    let replaceMap: { [key: string]: string }
-    let replaceFunc: (matched: string) => string
-    let reverseReplaceReg: RegExp
-    let reverseReplaceMap: { [key: string]: string }
-    let reverseReplaceFunc: (matched: string) => string
+    const targetToPublic: Replacer = new Replacer()
+    const publicToTarget: Replacer = new Replacer()
+    const targetToLocal: Replacer = new Replacer()
+    const localToTarget: Replacer = new Replacer()
     if (config.domains) {
-      replaceMap = {}
-      reverseReplaceMap = {}
-      const escapedUrls: string[] = []
-      const reverseEcapedUrls: string[] = []
       for (const domainConfig of config.domains) {
-        const targetDomain = domainConfig.target
+        // Replace urls
         if (domainConfig.public) {
-          const publicDomain = domainConfig.public
-          replaceMap[targetDomain] = publicDomain
-          escapedUrls.push(escapeReg(targetDomain))
-          reverseReplaceMap[publicDomain] = targetDomain
-          reverseEcapedUrls.push(escapeReg(publicDomain))
+          targetToPublic.add(domainConfig.target, domainConfig.public)
+          publicToTarget.add(domainConfig.public, domainConfig.target)
+          // Spacial syntax
+          targetToPublic.add(`${domainConfig.id}.portless`, domainConfig.public)
+        }
+        if (domainConfig.local) {
+          targetToLocal.add(domainConfig.target, domainConfig.local)
+          localToTarget.add(domainConfig.local, domainConfig.target)
+          // Spacial syntax
+          targetToLocal.add(`${domainConfig.id}.portless`, domainConfig.local)
         }
       }
-      replaceReg = new RegExp(`(${escapedUrls.join('|')})`, 'g')
-      replaceFunc = (matched: string) => replaceMap[matched]
-      reverseReplaceReg = new RegExp(`(${reverseEcapedUrls.join('|')})`, 'g')
-      reverseReplaceFunc = (matched: string) => reverseReplaceMap[matched]
+    }
+    targetToPublic.build()
+    publicToTarget.build()
+    targetToLocal.build()
+    localToTarget.build()
+
+    function getDomainType (req: IncomingMessage) {
+      const host = req.headers.host
+      if (host) {
+        const incomingDomain = proxyInfo.incomingDomains.find(d => d.domain === host)
+        if (incomingDomain) {
+          return incomingDomain.type
+        }
+      }
+    }
+
+    function getReplacer (req: IncomingMessage, publicReplacer: Replacer, localReplacer: Replacer) {
+      const domainType = getDomainType(req)
+      if (domainType === 'public') {
+        return publicReplacer
+      } else if (domainType === 'local') {
+        return localReplacer
+      }
     }
 
     const webMiddleware = (req: IncomingMessage, res: ServerResponse) => {
@@ -107,10 +144,12 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
         }
       }
 
-      if (replaceReg) {
-        let shouldRewrite = false
+      // Replace links
+      const replacer = getReplacer(req, targetToPublic, targetToLocal)
 
-        // Rewrite links
+      if (replacer) {
+        let shouldRewrite = false
+        
         const _writeHead = res.writeHead.bind(res)
         res.writeHead = (...args: any) => {
           const headers = (args.length > 2) ? args[2] : args[1]
@@ -134,10 +173,10 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
           // Replace CORS header
           const corsHeader = res.getHeader('access-control-allow-origin')
           if (corsHeader && typeof corsHeader === 'string') {
-            res.setHeader('access-control-allow-origin', corsHeader.replace(replaceReg, replaceFunc))
+            res.setHeader('access-control-allow-origin', replacer.replace(corsHeader))
           }
           if (headers && headers['access-control-allow-origin']) {
-            headers['access-control-allow-origin'] = headers['access-control-allow-origin'].replace(replaceReg, replaceFunc)
+            headers['access-control-allow-origin'] = replacer.replace(headers['access-control-allow-origin'])
           }
 
           return _writeHead(...args)
@@ -152,7 +191,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
             } else {
               text = data
             }
-            const newText = text.replace(replaceReg, replaceFunc)
+            const newText = replacer.replace(text)
             return _write(newText)
           } else {
             return _write(data)
@@ -170,27 +209,31 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
     }
 
     const wsMiddleware = (req: IncomingMessage, socket: any, head: any) => {
-      if (req.headers.host) {
-        req.headers.host = req.headers.host.replace(reverseReplaceReg, reverseReplaceFunc)
-      }
-      if (Array.isArray(req.headers.origin)) {
-        req.headers.origin = req.headers.origin.map(value => value.replace(reverseReplaceReg, reverseReplaceFunc))
-      } else if (req.headers.origin) {
-        req.headers.origin = req.headers.origin.replace(reverseReplaceReg, reverseReplaceFunc)
+      const replacer = getReplacer(req, publicToTarget, localToTarget)
+
+      if (replacer) {
+        if (req.headers.host) {
+          req.headers.host = replacer.replace(req.headers.host)
+        }
+        if (Array.isArray(req.headers.origin)) {
+          req.headers.origin = req.headers.origin.map(value => replacer.replace(value))
+        } else if (req.headers.origin) {
+          req.headers.origin = replacer.replace(req.headers.origin)
+        }
       }
 
       // Proxy websockets
       proxy.ws(req, socket, head)
     }
 
-    const proxyObj: ReverseProxy = {
+    const proxyInfo: ReverseProxy = {
       targetDomain,
       incomingDomains: [],
       webMiddleware,
       wsMiddleware,
     }
-    currentProxies.push(proxyObj)
-    proxies.push(proxyObj)
+    currentProxies.push(proxyInfo)
+    proxies.push(proxyInfo)
   }
 
   // Dedupe target urls
@@ -208,14 +251,17 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
       consola.error(`Proxy with target ${domainConfig.target} not found`)
       continue
     }
-    for (const url of [domainConfig.public, domainConfig.local]) {
-      if (url) {
-        if (domainMap[url]) {
-          consola.error(`Domain ${url} is already mapped to a Proxy`)
+    const incoming = { public: domainConfig.public, local: domainConfig.local }
+    for (const key in incoming) {
+      const type: IncomingDomainType = key as keyof typeof incoming
+      const domain = incoming[type]
+      if (domain) {
+        if (domainMap[domain]) {
+          consola.error(`Domain ${domain} is already mapped to a Proxy`)
         } else {
-          domainMap[url] = proxy
-          proxy.incomingDomains.push(url)
-          consola.log(chalk.cyan('PROXY'), chalk.bold(url), '⇒', chalk.blue.bold(domainConfig.target))
+          domainMap[domain] = proxy
+          proxy.incomingDomains.push({ domain, type })
+          consola.log(chalk.cyan('PROXY'), chalk.bold(domain), '⇒', chalk.blue.bold(domainConfig.target))
         }
       }
     }
@@ -228,8 +274,8 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
       if (index !== -1) {
         proxies.splice(index, 1)
       }
-      for (const incomingUrl of proxy.incomingDomains) {
-        delete domainMap[incomingUrl]
+      for (const incomingDomain of proxy.incomingDomains) {
+        delete domainMap[incomingDomain.domain]
       }
     }
   }
