@@ -95,7 +95,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
     const server = http.createServer((req, res) => {
       // Acme challenge to issue certificates
       if (options.publicKeyId) {
-        if (req.url?.startsWith(acmeChallengePath)) {
+        if (req.url && req.url.startsWith(acmeChallengePath)) {
           const id = req.url.substr(acmeChallengePath.length)
           res.write(`${id}.${options.publicKeyId}`)
           res.end()
@@ -166,11 +166,13 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
     })
 
     server.on('upgrade', (req: IncomingMessage, socket, head) => {
-      req.headers.host = req.headers.host?.replace(reverseReplaceReg, reverseReplaceFunc)
+      if (req.headers.host) {
+        req.headers.host = req.headers.host.replace(reverseReplaceReg, reverseReplaceFunc)
+      }
       if (Array.isArray(req.headers.origin)) {
         req.headers.origin = req.headers.origin.map(value => value.replace(reverseReplaceReg, reverseReplaceFunc))
-      } else {
-        req.headers.origin = req.headers.origin?.replace(reverseReplaceReg, reverseReplaceFunc)
+      } else if (req.headers.origin) {
+        req.headers.origin = req.headers.origin.replace(reverseReplaceReg, reverseReplaceFunc)
       }
 
       // Proxy websockets
@@ -178,11 +180,11 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
     })
 
     server.listen(port, '0.0.0.0', () => {
-    consola.success(chalk.blue('Proxy'), proxyUrl, '=>', target)
+      consola.success(chalk.blue('Proxy'), proxyUrl, '=>', target)
 
-    if (domain && domain.publicUrl !== undefined) {
-      publicUrlCallbacks.forEach(cb => cb(proxyUrl, domain.publicUrl as string))
-    }
+      if (domain && domain.publicUrl !== undefined) {
+        publicUrlCallbacks.forEach(cb => cb(proxyUrl, domain.publicUrl as string))
+      }
     })
 
     servers.push(server)

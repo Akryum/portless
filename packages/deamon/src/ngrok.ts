@@ -22,7 +22,7 @@ export async function useNgrok (config: PortlessConfig) {
     const firstPublicDomain: string = firstPublicDomainConfig.publicUrl as string
 
     const configDir = getRcFolder('greenlock-config')
-    const certDir = path.resolve(configDir, config.greenlock?.staging ? 'staging' : 'live', getDomain(firstPublicDomain))
+    const certDir = path.resolve(configDir, config.greenlock && config.greenlock.staging ? 'staging' : 'live', getDomain(firstPublicDomain))
     const keyFile = path.resolve(certDir, 'privkey.pem')
     const certFile = path.resolve(certDir, 'cert.pem')
 
