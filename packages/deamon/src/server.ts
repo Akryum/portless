@@ -62,7 +62,7 @@ export async function startServer () {
 
   const server = http.createServer(app)
   server.listen(port, '0.0.0.0', async () => {
-    consola.success('Deamon server listening on', `0.0.0.0:${port}`)
+    consola.info('Deamon server listening on', `0.0.0.0:${port}`)
 
     await restoreApps()
   })
