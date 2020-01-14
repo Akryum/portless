@@ -4,16 +4,11 @@ import chalk from 'chalk'
 import fs from 'fs-extra'
 import path from 'path'
 import { PortlessConfig } from '@portless/config'
-import { getDomain, getRcFolder, wait } from '@portless/util'
-import { restartNgrokTunnels } from './ngrok'
+import { getDomain, wait, ThenType } from '@portless/util'
 
-export interface GreenlockInfo {
-  publicKeyId?: string
-}
-
-export async function setupGreenlock (config: PortlessConfig): Promise<GreenlockInfo> {
-  const options = config.greenlock
-  if (!options) return {}
+export async function useGreenlock (config: PortlessConfig) {
+  const greenlockConfig = config.greenlock
+  if (!greenlockConfig) return null
 
   let publicDomains: string[]
   if (config.domains) {
@@ -23,23 +18,25 @@ export async function setupGreenlock (config: PortlessConfig): Promise<Greenlock
       .map(domainConfig => getDomain(domainConfig.publicUrl))
   } else {
     consola.warn('No public domains defined.')
-    return {}
+    return null
   }
 
-  const configDir = getRcFolder('greenlock-config')
-  const packageRoot = getRcFolder('greenlock')
+  const configDir = path.resolve(config.projectRoot, greenlockConfig.configDir || 'greenlock-config')
+  fs.ensureDirSync(configDir)
 
   const site = {
     subject: publicDomains[0],
     altnames: publicDomains,
   }
 
+  const certificateIssuedCallbacks: Function[] = []
+
   const greenlock = Greenlock.create({
     configDir,
-    packageRoot,
-    packageAgent: options.packageAgent,
-    maintainerEmail: options.maintainerEmail,
-    staging: options.staging,
+    packageRoot: config.projectRoot,
+    packageAgent: greenlockConfig.packageAgent,
+    maintainerEmail: greenlockConfig.maintainerEmail,
+    staging: greenlockConfig.staging,
     notify: (event: string, details: any) => {
       if (event === 'error') {
         consola.error(details)
@@ -65,7 +62,7 @@ export async function setupGreenlock (config: PortlessConfig): Promise<Greenlock
         }
       } else if (event === 'cert_issue') {
         consola.success(chalk.green('Certificate issued'), details)
-        restartNgrokTunnels()
+        certificateIssuedCallbacks.forEach(cb => cb())
       } else {
         consola.info(chalk.blue(event), details)
       }
@@ -73,14 +70,14 @@ export async function setupGreenlock (config: PortlessConfig): Promise<Greenlock
   })
 
   await greenlock.manager.defaults({
-    subscriberEmail: options.maintainerEmail,
+    subscriberEmail: greenlockConfig.maintainerEmail,
     agreeToTerms: true,
-    directoryUrl: options.staging ? 'https://acme-staging-v02.api.letsencrypt.org/directory' : 'https://acme-v02.api.letsencrypt.org/directory',
+    directoryUrl: greenlockConfig.staging ? 'https://acme-staging-v02.api.letsencrypt.org/directory' : 'https://acme-v02.api.letsencrypt.org/directory',
   })
 
   await greenlock.add(site)
 
-  const accountFile = path.resolve(configDir, `accounts/acme${options.staging ? '-staging' : ''}-v02.api.letsencrypt.org/directory`, `${options.maintainerEmail}.json`)
+  const accountFile = path.resolve(configDir, `accounts/acme${greenlockConfig.staging ? '-staging' : ''}-v02.api.letsencrypt.org/directory`, `${greenlockConfig.maintainerEmail}.json`)
 
   async function readAccountData (): Promise<any> {
     if (fs.existsSync(accountFile)) {
@@ -93,7 +90,21 @@ export async function setupGreenlock (config: PortlessConfig): Promise<Greenlock
   const accountData = await readAccountData()
   const publicKeyId = accountData.publicKeyJwk.kid
 
+  async function destroy () {
+    await greenlock.remove({
+      subject: site.subject,
+    })
+  }
+
+  function onCertificateIssued (callback: Function) {
+    certificateIssuedCallbacks.push(callback)
+  }
+
   return {
     publicKeyId,
+    destroy,
+    onCertificateIssued,
   }
 }
+
+export type UseGreenlock = ThenType<typeof useGreenlock>

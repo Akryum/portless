@@ -6,20 +6,33 @@ import chalk from 'chalk'
 import path from 'path'
 import { renderTemplate } from '@portless/template'
 import { PortlessConfig, ProxyRedirectConfig } from '@portless/config'
-import { escapeReg, getDomain } from '@portless/util'
-import { addNgrokTunnel } from './ngrok'
+import { escapeReg, getDomain, ThenType } from '@portless/util'
 
 const acmeChallengePath = '/.well-known/acme-challenge/'
 
-export async function setupReverseProxy (config: PortlessConfig, publicKeyId?: string) {
-  if (!config.reverseProxy) return
+export interface ReverseProxyOptions {
+  publicKeyId?: string
+}
+
+export type PublicUrlCallback = (targetUrl: string, publicUrl: string) => void
+
+export async function useReverseProxy (config: PortlessConfig, options: ReverseProxyOptions = {}) {
+  if (!config.reverseProxy) return null
 
   const pacProxyAgent = config.targetProxy ? new PacProxyAgent(config.targetProxy) : undefined
+
+  const publicUrlCallbacks: PublicUrlCallback[] = []
+
+  function onPublicUrl (cb: PublicUrlCallback) {
+    publicUrlCallbacks.push(cb)
+  }
+
+  const servers: http.Server[] = []
 
   async function proxyTarget (redirect: ProxyRedirectConfig) {
     const { port, target } = redirect
 
-    const localUrl = `localhost:${port}`
+    const proxyUrl = `0.0.0.0:${port}`
 
     const domain = config.domains ? config.domains.find(d => d.targetUrl === target) : undefined
 
@@ -81,10 +94,10 @@ export async function setupReverseProxy (config: PortlessConfig, publicKeyId?: s
 
     const server = http.createServer((req, res) => {
       // Acme challenge to issue certificates
-      if (publicKeyId) {
+      if (options.publicKeyId) {
         if (req.url?.startsWith(acmeChallengePath)) {
           const id = req.url.substr(acmeChallengePath.length)
-          res.write(`${id}.${publicKeyId}`)
+          res.write(`${id}.${options.publicKeyId}`)
           res.end()
           return
         }
@@ -164,18 +177,30 @@ export async function setupReverseProxy (config: PortlessConfig, publicKeyId?: s
       proxy.ws(req, socket, head)
     })
 
-    server.listen(port)
-    consola.success(chalk.blue('Proxy'), localUrl, '=>', target)
+    server.listen(port, '0.0.0.0')
+    consola.success(chalk.blue('Proxy'), proxyUrl, '=>', target)
 
-    if (config.ngrok && domain && domain.publicUrl !== undefined) {
-      await addNgrokTunnel(config, {
-        targetUrl: localUrl,
-        publicUrl: domain.publicUrl,
-      })
+    servers.push(server)
+
+    if (domain && domain.publicUrl !== undefined) {
+      publicUrlCallbacks.forEach(cb => cb(proxyUrl, domain.publicUrl as string))
     }
   }
 
   for (const redirect of config.reverseProxy.redirects) {
     await proxyTarget(redirect)
   }
+
+  function destroy () {
+    for (const server of servers) {
+      server.close()
+    }
+  }
+
+  return {
+    onPublicUrl,
+    destroy,
+  }
 }
+
+export type UseReverseProxy = ThenType<typeof useReverseProxy>

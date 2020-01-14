@@ -10,16 +10,14 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rimraf ./dist && tsc -d",
+    "build": "rimraf dist *.tsbuildinfo && tsc -d",
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
     "lodash": "^4.17.15"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.149",
-    "rimraf": "^3.0.0",
-    "typescript": "^3.4.3"
+    "@types/lodash": "^4.14.149"
   },
   "files": [
     "dist/**/*"

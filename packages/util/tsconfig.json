@@ -7,8 +7,4 @@
   "include": [
     "src/**/*",
   ],
-  "references": [
-    { "path": "../config" },
-    { "path": "../template" },
-  ],
 }

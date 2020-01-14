@@ -10,5 +10,6 @@
   "references": [
     { "path": "../config" },
     { "path": "../template" },
+    { "path": "../util" },
   ],
 }

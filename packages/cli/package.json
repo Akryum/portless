@@ -17,34 +17,20 @@
     "portless": "dist/bin.js"
   },
   "scripts": {
-    "build": "rimraf ./dist && tsc -d && chmod u+x dist/bin.js",
+    "build": "rimraf dist *.tsbuildinfo && tsc -d && chmod u+x dist/bin.js",
     "prepublishOnly": "yarn build",
     "test": "jest"
   },
   "dependencies": {
-    "@portless/config": "^0.1.0",
-    "@portless/template": "^0.1.0",
+    "@portless/deamon": "^0.1.0",
     "@portless/util": "^0.1.0",
-    "cac": "^6.5.3",
-    "chalk": "^3.0.0",
-    "consola": "^2.11.3",
-    "fs-extra": "^8.1.0",
-    "greenlock": "^4.0.3",
-    "http-proxy": "^1.18.0",
-    "ngrok": "^3.2.7",
-    "pac-proxy-agent": "^3.0.1"
+    "cac": "^6.5.4",
+    "node-fetch": "^2.6.0"
   },
   "devDependencies": {
-    "@types/fs-extra": "^8.0.1",
-    "@types/http-proxy": "^1.17.2",
-    "@types/jest": "^22.2.3",
-    "jest": "^24.9.0",
-    "rimraf": "^3.0.0",
-    "ts-jest": "^24.2.0",
-    "typescript": "^3.4.3"
+    "@types/node-fetch": "^2.5.4"
   },
   "files": [
-    "dist/**/*",
-    "templates/**/*"
+    "dist/**/*"
   ]
 }

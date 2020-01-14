@@ -8,7 +8,7 @@
     "src/**/*",
   ],
   "references": [
-    { "path": "../config" },
-    { "path": "../template" },
+    { "path": "../util" },
+    { "path": "../deamon" },
   ],
 }

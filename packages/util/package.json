@@ -14,17 +14,18 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rimraf ./dist && tsc -d",
-    "prepublishOnly": "yarn build",
-    "test": "jest"
+    "build": "rimraf dist *.tsbuildinfo && tsc -d",
+    "prepublishOnly": "yarn build"
   },
   "dependencies": {
+    "@hapi/joi": "^17.0.2",
     "@portless/config": "^0.1.0",
-    "fs-extra": "^8.1.0"
+    "consola": "^2.11.3",
+    "fs-extra": "^8.1.0",
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
-    "rimraf": "^3.0.0",
-    "typescript": "^3.4.3"
+    "@types/hapi__joi": "^16.0.6"
   },
   "files": [
     "dist/**/*"

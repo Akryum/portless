@@ -17,7 +17,7 @@
       "node",
       "@types/jest"
     ],
-    "baseUrl": ".",
+    "baseUrl": "."
   },
   "exclude": [
     "node_modules",
