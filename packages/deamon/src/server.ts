@@ -3,10 +3,12 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import { getPortPromise } from 'portfinder'
 import fs from 'fs-extra'
+import path from 'path'
 import consola from 'consola'
 import { loadGlobalConfig } from '@portless/global-config'
-import { addApp, stopAllApps, restartApp, getAppByCwd, removeApp, restoreApps } from './app'
 import { getRcFile } from '@portless/util'
+import { renderTemplate } from '@portless/template'
+import { addApp, stopAllApps, restartApp, getAppByCwd, removeApp, restoreApps } from './app'
 
 export async function startServer () {
   /** Exposes the actual port where the server is listening */
@@ -18,12 +20,26 @@ export async function startServer () {
     port: config.port,
   })
 
+  const host = config.host || 'localhost'
+
   const app = express()
 
   app.use(bodyParser.json())
   
   app.get('/.well-known/status', (req, res) => {
     res.json({ status: 'live' })
+  })
+
+  app.get('/proxy.pac', async (req, res) => {
+    const config = await loadGlobalConfig()
+    res.status(200)
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    res.send(renderTemplate(path.resolve(__dirname, `../templates/pac${config.proxy ? '-with-proxy' : ''}.ejs`), {
+      config,
+      host,
+      port,
+    }))
+    res.end()
   })
 
   app.post('/api/stop', async (req, res) => {
@@ -69,7 +85,6 @@ export async function startServer () {
   })
 
   const server = http.createServer(app)
-  const host = config.host || '0.0.0.0'
   server.listen(port, host, async () => {
     consola.info('Deamon server listening on', `${host}:${port}`)
 

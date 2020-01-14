@@ -1,0 +1,9 @@
+// Proxy only *.<%= config.tld %> requests to portless
+// Configuration file can be found in ~/.portless
+function FindProxyForURL (url, host) {
+  if (dnsDomainIs(host, '.<%= config.tld %>')) {
+    return 'PROXY <%= host %>:<%= port %>';
+  }
+
+  return 'DIRECT';
+}
