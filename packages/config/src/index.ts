@@ -3,7 +3,6 @@ import path from 'path'
 
 export interface PortlessProjectConfig {
   projectName: string
-  reverseProxy?: ReverseProxyConfig
   domains?: DomainConfig[]
   targetProxy?: string
   greenlock?: GreenlockConfig
@@ -15,19 +14,11 @@ export interface PortlessConfig extends PortlessProjectConfig {
   projectRoot: string
 }
 
-export interface ReverseProxyConfig {
-  redirects: ProxyRedirectConfig[]
-}
-
-export interface ProxyRedirectConfig {
-  port: number
-  target: string
-}
-
 export interface DomainConfig {
-  publicUrl?: string
-  localUrl?: string
-  targetUrl: string
+  id: string
+  public?: string
+  local?: string
+  target: string
 }
 
 export interface GreenlockConfig {

@@ -4,7 +4,6 @@ import { loadGlobalConfig, saveGlobalConfig } from '@portless/global-config'
 import { UseGreenlock, useGreenlock } from './greenlock'
 import { UseReverseProxy, useReverseProxy } from './proxy'
 import { UseNgrok, useNgrok } from './ngrok'
-import { addAutoReverseProxy } from './auto-proxy'
 
 export class App {
   config: PortlessConfig
@@ -14,7 +13,6 @@ export class App {
 
   async start (cwd: string) {
     this.config = await loadConfig(cwd)
-    await addAutoReverseProxy(this.config)
     this.greenlock = await useGreenlock(this.config)
     if (this.config.ngrok) {
       this.ngrok = await useNgrok(this.config)
@@ -23,13 +21,18 @@ export class App {
       publicKeyId: this.greenlock ? this.greenlock.publicKeyId : undefined,
     })
 
-    if (this.reverseProxy && this.ngrok) {
-      this.reverseProxy.onPublicUrl((targetUrl, publicUrl) => {
-        this.ngrok.addTunnel({
-          targetUrl,
-          publicUrl,
-        })
-      })
+    if (this.config.domains && this.ngrok) {
+      for (const domainConfig of this.config.domains) {
+        if (domainConfig.public && domainConfig.local) {
+          await this.ngrok.addTunnel({
+            publicDomain: domainConfig.public,
+            targetDomain: domainConfig.local,
+          })
+        }
+        if (domainConfig.public && !domainConfig.local) {
+          consola.warn(`Domain config has publicUrl ${domainConfig.public} but no localUrl - ngrok tunnel skipped`)
+        }
+      }
     }
 
     if (this.greenlock && this.ngrok) {

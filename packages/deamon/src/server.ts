@@ -5,10 +5,12 @@ import { getPortPromise } from 'portfinder'
 import fs from 'fs-extra'
 import path from 'path'
 import consola from 'consola'
+import chalk from 'chalk'
 import { loadGlobalConfig } from '@portless/global-config'
 import { getRcFile } from '@portless/util'
 import { renderTemplate } from '@portless/template'
 import { addApp, stopAllApps, restartApp, getAppByCwd, removeApp, restoreApps } from './app'
+import { getProxy } from './proxy'
 
 export async function startServer () {
   /** Exposes the actual port where the server is listening */
@@ -23,6 +25,19 @@ export async function startServer () {
   const host = config.host || 'localhost'
 
   const app = express()
+
+  app.use((req, res, next) => {
+    const host = req.get('host')
+    if (host) {
+      const proxy = getProxy(host)
+      if (proxy) {
+        consola.log(req.protocol, host, req.path, chalk.cyan('PROXY'), proxy.targetDomain)
+        proxy.webMiddleware(req, res)
+        return
+      }
+    }
+    next()
+  })
 
   app.use(bodyParser.json())
   
@@ -97,5 +112,9 @@ export async function startServer () {
         port,
       })
     }  
+  })
+
+  server.on('upgrade', () => {
+
   })
 }

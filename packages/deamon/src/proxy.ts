@@ -1,12 +1,12 @@
-import http, { IncomingMessage } from 'http'
+import { IncomingMessage, ServerResponse } from 'http'
 import httpProxy from 'http-proxy'
 import PacProxyAgent from 'pac-proxy-agent'
 import consola from 'consola'
 import chalk from 'chalk'
 import path from 'path'
 import { renderTemplate } from '@portless/template'
-import { PortlessConfig, ProxyRedirectConfig } from '@portless/config'
-import { escapeReg, getDomain, ThenType } from '@portless/util'
+import { PortlessConfig } from '@portless/config'
+import { escapeReg, ThenType } from '@portless/util'
 
 const acmeChallengePath = '/.well-known/acme-challenge/'
 
@@ -16,28 +16,31 @@ export interface ReverseProxyOptions {
 
 export type PublicUrlCallback = (targetUrl: string, publicUrl: string) => void
 
+export interface ReverseProxy {
+  targetDomain: string
+  incomingDomains: string[]
+  webMiddleware: (req: IncomingMessage, res: ServerResponse) => Promise<void> | void
+  wsMiddleware: (req: IncomingMessage, socker: any, head: any) => Promise<void> | void
+}
+
+const proxies: ReverseProxy[] = []
+const domainMap: { [key: string]: ReverseProxy } = {}
+
 export async function useReverseProxy (config: PortlessConfig, options: ReverseProxyOptions = {}) {
-  if (!config.reverseProxy) return null
+  if (!config.domains) return null
 
   const pacProxyAgent = config.targetProxy ? new PacProxyAgent(config.targetProxy) : undefined
 
-  const publicUrlCallbacks: PublicUrlCallback[] = []
+  const currentProxies: ReverseProxy[] = []
 
-  function onPublicUrl (cb: PublicUrlCallback) {
-    publicUrlCallbacks.push(cb)
-  }
-
-  const servers: http.Server[] = []
-
-  async function proxyTarget (redirect: ProxyRedirectConfig) {
-    const { port, target } = redirect
-
-    const proxyUrl = `localhost:${port}`
-
-    const domain = config.domains ? config.domains.find(d => d.targetUrl === target) : undefined
-
+  async function proxyTarget (targetDomain: string) {
+    if (proxies.some(p => p.targetDomain === targetDomain)) {
+      consola.error(`A proxy targetting ${targetDomain} is already defined`)
+      return
+    }
+      
     const proxy = httpProxy.createProxyServer({
-      target,
+      target: `http://${targetDomain}`,
       agent: pacProxyAgent,
       changeOrigin: true,
       secure: false,
@@ -77,9 +80,9 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
       const escapedUrls: string[] = []
       const reverseEcapedUrls: string[] = []
       for (const domainConfig of config.domains) {
-        const targetDomain = getDomain(domainConfig.targetUrl)
-        if (domainConfig.publicUrl) {
-          const publicDomain = getDomain(domainConfig.publicUrl)
+        const targetDomain = domainConfig.target
+        if (domainConfig.public) {
+          const publicDomain = domainConfig.public
           replaceMap[targetDomain] = publicDomain
           escapedUrls.push(escapeReg(targetDomain))
           reverseReplaceMap[publicDomain] = targetDomain
@@ -92,7 +95,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
       reverseReplaceFunc = (matched: string) => reverseReplaceMap[matched]
     }
 
-    const server = http.createServer((req, res) => {
+    const webMiddleware = (req: IncomingMessage, res: ServerResponse) => {
       // Acme challenge to issue certificates
       if (options.publicKeyId) {
         if (req.url && req.url.startsWith(acmeChallengePath)) {
@@ -163,9 +166,9 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
 
       // Proxy HTTP
       proxy.web(req, res)
-    })
+    }
 
-    server.on('upgrade', (req: IncomingMessage, socket, head) => {
+    const wsMiddleware = (req: IncomingMessage, socket: any, head: any) => {
       if (req.headers.host) {
         req.headers.host = req.headers.host.replace(reverseReplaceReg, reverseReplaceFunc)
       }
@@ -177,33 +180,66 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
 
       // Proxy websockets
       proxy.ws(req, socket, head)
-    })
+    }
 
-    server.listen(port, 'localhost', () => {
-      consola.success(chalk.blue('Proxy'), proxyUrl, '=>', target)
-
-      if (domain && domain.publicUrl !== undefined) {
-        publicUrlCallbacks.forEach(cb => cb(proxyUrl, domain.publicUrl as string))
-      }
-    })
-
-    servers.push(server)
+    const proxyObj: ReverseProxy = {
+      targetDomain,
+      incomingDomains: [],
+      webMiddleware,
+      wsMiddleware,
+    }
+    currentProxies.push(proxyObj)
+    proxies.push(proxyObj)
   }
 
-  for (const redirect of config.reverseProxy.redirects) {
-    await proxyTarget(redirect)
+  // Dedupe target urls
+  const targetDomains = Array.from(new Set(config.domains.map(d => d.target)))
+
+  // Create proxies
+  for (const domain of targetDomains) {
+    await proxyTarget(domain)
+  }
+
+  // Map Urls
+  for (const domainConfig of config.domains) {
+    const proxy = proxies.find(p => p.targetDomain === domainConfig.target)
+    if (!proxy) {
+      consola.error(`Proxy with target ${domainConfig.target} not found`)
+      continue
+    }
+    for (const url of [domainConfig.public, domainConfig.local]) {
+      if (url) {
+        if (domainMap[url]) {
+          consola.error(`Domain ${url} is already mapped to a Proxy`)
+        } else {
+          domainMap[url] = proxy
+          proxy.incomingDomains.push(url)
+          consola.log(chalk.cyan('PROXY'), chalk.bold(url), '⇒', chalk.blue.bold(domainConfig.target))
+        }
+      }
+    }
   }
 
   function destroy () {
-    for (const server of servers) {
-      server.close()
+    // Remove current app proxies
+    for (const proxy of currentProxies) {
+      const index = proxies.indexOf(proxy)
+      if (index !== -1) {
+        proxies.splice(index, 1)
+      }
+      for (const incomingUrl of proxy.incomingDomains) {
+        delete domainMap[incomingUrl]
+      }
     }
   }
 
   return {
-    onPublicUrl,
     destroy,
   }
 }
 
 export type UseReverseProxy = ThenType<typeof useReverseProxy>
+
+export function getProxy (incoming: string): ReverseProxy | null {
+  return domainMap[incoming]
+}

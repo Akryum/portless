@@ -4,20 +4,26 @@ import chalk from 'chalk'
 import fs from 'fs-extra'
 import path from 'path'
 import { PortlessConfig } from '@portless/config'
-import { getDomain, wait, ThenType } from '@portless/util'
+import { wait, ThenType } from '@portless/util'
 
 export async function useGreenlock (config: PortlessConfig) {
   const greenlockConfig = config.greenlock
   if (!greenlockConfig) return null
 
-  let publicDomains: string[]
+  const secureDomains: string[] = []
   if (config.domains) {
-    publicDomains = config.domains
-      .filter(domainConfig => !!domainConfig.publicUrl)
-      // @ts-ignore
-      .map(domainConfig => getDomain(domainConfig.publicUrl))
-  } else {
-    consola.warn('No public domains defined.')
+    for (const domainConfig of config.domains) {
+      if (domainConfig.public) {
+        secureDomains.push(domainConfig.public)
+      }
+      if (domainConfig.local) {
+        secureDomains.push(domainConfig.local)
+      }
+    }
+  }
+  
+  if (!secureDomains.length) {
+    consola.warn('No public or local domains defined.')
     return null
   }
 
@@ -25,8 +31,8 @@ export async function useGreenlock (config: PortlessConfig) {
   fs.ensureDirSync(configDir)
 
   const site = {
-    subject: publicDomains[0],
-    altnames: publicDomains,
+    subject: secureDomains[0],
+    altnames: secureDomains,
   }
 
   const certificateIssuedCallbacks: Function[] = []

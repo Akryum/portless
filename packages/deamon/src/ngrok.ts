@@ -4,11 +4,11 @@ import ngrok from 'ngrok'
 import consola from 'consola'
 import chalk from 'chalk'
 import { PortlessConfig } from '@portless/config'
-import { getDomain, ThenType } from '@portless/util'
+import { ThenType } from '@portless/util'
 
 export interface TunnelConfig {
-  publicUrl: string
-  targetUrl: string
+  publicDomain: string
+  targetDomain: string
 }
 
 export async function useNgrok (config: PortlessConfig) {
@@ -17,12 +17,12 @@ export async function useNgrok (config: PortlessConfig) {
 
   async function addTunnel (tunnel: TunnelConfig) {
     if (!config.ngrok || !config.domains) return
-    const firstPublicDomainConfig = config.domains.find(d => d.publicUrl != null)
+    const firstPublicDomainConfig = config.domains.find(d => d.public != null)
     if (!firstPublicDomainConfig) return
-    const firstPublicDomain: string = firstPublicDomainConfig.publicUrl as string
+    const firstPublicDomain: string = firstPublicDomainConfig.public as string
 
     const configDir = path.resolve(config.projectRoot, (config.greenlock && config.greenlock.configDir) || 'greenlock-config')
-    const certDir = path.resolve(configDir, config.greenlock && config.greenlock.staging ? 'staging' : 'live', getDomain(firstPublicDomain))
+    const certDir = path.resolve(configDir, config.greenlock && config.greenlock.staging ? 'staging' : 'live', firstPublicDomain)
     const keyFile = path.resolve(certDir, 'privkey.pem')
     const certFile = path.resolve(certDir, 'cert.pem')
 
@@ -36,17 +36,17 @@ export async function useNgrok (config: PortlessConfig) {
         region: config.ngrok.region,
         ...useHttps ? {
           proto: 'tls',
-          addr: getDomain(tunnel.targetUrl),
+          addr: tunnel.targetDomain,
           key: keyFile,
           crt: certFile,
         } : {
           proto: 'http',
-          addr: tunnel.targetUrl,
+          addr: tunnel.targetDomain,
           bind_tls: 'both',
         },
-        hostname: getDomain(tunnel.publicUrl),
+        hostname: tunnel.publicDomain,
       })
-      consola.success(chalk.yellow('Ngrok'), url, '=>', tunnel.targetUrl)
+      consola.log(chalk.magenta('NGROK'), chalk.bold(url), '⇒', chalk.blue.bold(tunnel.targetDomain))
       return url
     } catch (e) {
       consola.error(e)
