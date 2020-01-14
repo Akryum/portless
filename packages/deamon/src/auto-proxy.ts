@@ -1,5 +1,6 @@
 import { PortlessConfig, ProxyRedirectConfig } from '@portless/config'
 import { getPortPromise } from 'portfinder'
+import { loadGlobalConfig } from '@portless/global-config'
 
 export async function addAutoReverseProxy (config: PortlessConfig) {
   if (config.domains) {
@@ -10,7 +11,8 @@ export async function addAutoReverseProxy (config: PortlessConfig) {
       redirects = []
     }
 
-    let port = 2000
+    const globalConfig = await loadGlobalConfig()
+    let port = globalConfig.port
     for (const domainConfig of config.domains) {
       if (!redirects.some(r => r.target === domainConfig.targetUrl)) {
         port = await getPortPromise({
