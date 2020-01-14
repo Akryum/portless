@@ -3,7 +3,7 @@ import fetch, { RequestInit } from 'node-fetch'
 
 export async function rest (method: string, url: string, options: RequestInit = {}) {
   const config = await loadGlobalConfig()
-  const result = await fetch(`http://localhost:${config.port}${url}`, {
+  const result = await fetch(`http://${config.host || '0.0.0.0'}:${config.port}${url}`, {
     method,
     ...options,
   })

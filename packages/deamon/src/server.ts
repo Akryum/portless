@@ -3,12 +3,13 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import { getPortPromise } from 'portfinder'
 import consola from 'consola'
-import { updateGlobalConfig } from '@portless/global-config'
+import { updateGlobalConfig, loadGlobalConfig } from '@portless/global-config'
 import { addApp, stopAllApps, restartApp, getAppByCwd, removeApp, restoreApps } from './app'
 
 export async function startServer () {
+  const config = await loadGlobalConfig()
   const port = await getPortPromise({
-    port: 5000,
+    port: config.port,
   })
   await updateGlobalConfig({
     port,
@@ -61,8 +62,9 @@ export async function startServer () {
   })
 
   const server = http.createServer(app)
-  server.listen(port, '0.0.0.0', async () => {
-    consola.info('Deamon server listening on', `0.0.0.0:${port}`)
+  const host = config.host || '0.0.0.0'
+  server.listen(port, host, async () => {
+    consola.info('Deamon server listening on', `${host}:${port}`)
 
     await restoreApps()
   })

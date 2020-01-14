@@ -6,6 +6,7 @@ import { getRcFile } from '@portless/util'
 
 export interface PortlessGlobalConfig {
   port: number
+  host?: string
   apps?: GlobalAppConfig[]
 }
 
@@ -15,13 +16,15 @@ export interface GlobalAppConfig {
 }
 
 export const DEFAULT_GLOBAL_CONFIG = {
-  port: 5678,
+  port: 5656,
+  host: '0.0.0.0',
 }
 
 const globalConfigFile = getRcFile('config.json')
 
 const schema = joi.object({
   port: joi.number(),
+  host: joi.string().optional(),
   apps: joi.array().items(joi.object({
     cwd: joi.string(),
     projectName: joi.string(),
