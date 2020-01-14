@@ -4,7 +4,7 @@ import ngrok from 'ngrok'
 import consola from 'consola'
 import chalk from 'chalk'
 import { PortlessConfig } from '@portless/config'
-import { getRcFolder, getDomain, ThenType } from '@portless/util'
+import { getDomain, ThenType } from '@portless/util'
 
 export interface TunnelConfig {
   publicUrl: string
@@ -21,7 +21,7 @@ export async function useNgrok (config: PortlessConfig) {
     if (!firstPublicDomainConfig) return
     const firstPublicDomain: string = firstPublicDomainConfig.publicUrl as string
 
-    const configDir = getRcFolder('greenlock-config')
+    const configDir = path.resolve(config.projectRoot, (config.greenlock && config.greenlock.configDir) || 'greenlock-config')
     const certDir = path.resolve(configDir, config.greenlock && config.greenlock.staging ? 'staging' : 'live', getDomain(firstPublicDomain))
     const keyFile = path.resolve(certDir, 'privkey.pem')
     const certFile = path.resolve(certDir, 'cert.pem')
