@@ -98,8 +98,8 @@ export async function stopAllApps () {
 async function saveApps () {
   const config = await loadGlobalConfig()
   config.apps = apps.map(app => ({
-    cwd: app.config.cwd,
     projectName: app.config.projectName,
+    projectRoot: app.config.projectRoot,
   }))
   await saveGlobalConfig(config)
 }
@@ -108,7 +108,7 @@ export async function restoreApps () {
   const config = await loadGlobalConfig()
   if (config.apps) {
     for (const app of config.apps) {
-      await addApp(app.cwd)
+      await addApp(app.projectRoot)
     }
   }
 }
