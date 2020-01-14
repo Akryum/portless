@@ -31,7 +31,7 @@ export async function startServer () {
     if (host) {
       const proxy = getProxy(host)
       if (proxy) {
-        consola.log(req.protocol, host, req.path, chalk.cyan('PROXY'), proxy.targetDomain)
+        consola.log(`${req.protocol}://${host}${req.path}`, chalk.cyan('PROXY'), proxy.targetDomain)
         proxy.webMiddleware(req, res)
         return
       }
@@ -65,7 +65,6 @@ export async function startServer () {
   })
 
   app.post('/api/apps', async (req, res) => {
-    console.log(req.body)
     const app = await addApp(req.body.cwd)
     res.json({
       success: true,

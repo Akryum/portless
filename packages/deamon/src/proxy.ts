@@ -64,7 +64,8 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
         errorMessage,
         errorStack: err.stack,
       }))
-      consola.error(err.stack)
+      consola.error(`Error proxying ${req.url}:`)
+      consola.log(err.stack)
     })
 
     // Rewrite URL in responses
