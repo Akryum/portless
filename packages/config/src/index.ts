@@ -43,7 +43,7 @@ export interface NgrokConfig {
   region: 'us' | 'eu' | 'au' | 'ap'
 }
 
-export async function loadConfig (cwd: string): Promise<PortlessConfig> {
+export async function loadConfig (cwd: string = process.cwd()): Promise<PortlessConfig> {
   const configExplorer = cosmiconfig('portless')
   const result = await configExplorer.search(cwd)
   if (!result || result.isEmpty) {
