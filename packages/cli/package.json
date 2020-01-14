@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@portless/deamon": "^0.1.0",
+    "@portless/global-config": "^0.1.0",
     "@portless/util": "^0.1.0",
     "cac": "^6.5.4",
     "node-fetch": "^2.6.0"

@@ -2,10 +2,16 @@ import fs from 'fs-extra'
 import joi from '@hapi/joi'
 import { merge } from 'lodash'
 import consola from 'consola'
-import { getRcFile } from './rc-folder'
+import { getRcFile } from '@portless/util'
 
 export interface PortlessGlobalConfig {
   port: number
+  apps?: GlobalAppConfig[]
+}
+
+export interface GlobalAppConfig {
+  cwd: string
+  projectName: string
 }
 
 export const DEFAULT_GLOBAL_CONFIG = {
@@ -16,6 +22,10 @@ const globalConfigFile = getRcFile('config.json')
 
 const schema = joi.object({
   port: joi.number(),
+  apps: joi.array().items(joi.object({
+    cwd: joi.string(),
+    projectName: joi.string(),
+  })).optional(),
 })
 
 async function validateConfig (data: any) {

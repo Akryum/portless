@@ -8,9 +8,6 @@
     "src/**/*",
   ],
   "references": [
-    { "path": "../config" },
-    { "path": "../global-config" },
-    { "path": "../template" },
     { "path": "../util" },
   ],
 }

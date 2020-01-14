@@ -1,4 +1,4 @@
-import { loadGlobalConfig } from '@portless/util'
+import { loadGlobalConfig } from '@portless/global-config'
 import fetch, { RequestInit } from 'node-fetch'
 
 export async function rest (method: string, url: string, options: RequestInit = {}) {
@@ -16,22 +16,24 @@ export async function get (url: string) {
 
 export async function post (url: string, data: any = null) {
   return rest('POST', url, {
-    body: data,
+    body: JSON.stringify(data),
   })
 }
 
 export async function put (url: string, data: any = null) {
   return rest('PUT', url, {
-    body: data,
+    body: JSON.stringify(data),
   })
 }
 
 export async function patch (url: string, data: any = null) {
   return rest('PATCH', url, {
-    body: data,
+    body: JSON.stringify(data),
   })
 }
 
-export async function del (url: string) {
-  return rest('DELETE', url)
+export async function del (url: string, data: any = null) {
+  return rest('DELETE', url, {
+    body: JSON.stringify(data),
+  })
 }

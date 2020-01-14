@@ -20,8 +20,10 @@
   },
   "dependencies": {
     "@portless/config": "^0.1.0",
+    "@portless/global-config": "^0.1.0",
     "@portless/template": "^0.1.0",
     "@portless/util": "^0.1.0",
+    "body-parser": "^1.19.0",
     "chalk": "^3.0.0",
     "consola": "^2.11.3",
     "express": "^4.17.1",

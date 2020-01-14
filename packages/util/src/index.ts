@@ -1,5 +1,4 @@
 export * from './domain'
-export * from './global-config'
 export * from './rc-folder'
 export * from './reg'
 export * from './types'

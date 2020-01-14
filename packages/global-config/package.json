@@ -1,15 +1,11 @@
 {
-  "name": "@portless/util",
+  "name": "@portless/global-config",
   "version": "0.1.0",
-  "description": "(Shared utils) Easy local domains and reverse proxy with HTTPS support",
+  "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Guillaume Chau",
   "license": "MIT",
-  "keywords": [
-    "https",
-    "localhost"
-  ],
   "publishConfig": {
     "access": "public"
   },
@@ -18,8 +14,14 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
+    "@hapi/joi": "^17.0.2",
+    "@portless/util": "^0.1.0",
     "consola": "^2.11.3",
-    "fs-extra": "^8.1.0"
+    "fs-extra": "^8.1.0",
+    "lodash": "^4.17.15"
+  },
+  "devDependencies": {
+    "@types/hapi__joi": "^16.0.6"
   },
   "files": [
     "dist/**/*"
