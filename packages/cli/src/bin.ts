@@ -11,6 +11,12 @@ cli.command('start', 'Start Deamon')
     await startDaemon()
   })
 
+cli.command('start-inline', 'Start server directly (no-deamon)')
+  .action(async () => {
+    await stopDaemon()
+    require('./start-server')
+  })
+
 cli.command('stop', 'Stop Deamon')
   .action(async () => {
     await stopDaemon()
