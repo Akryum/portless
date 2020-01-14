@@ -177,14 +177,15 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
       proxy.ws(req, socket, head)
     })
 
-    server.listen(port, '0.0.0.0')
+    server.listen(port, '0.0.0.0', () => {
     consola.success(chalk.blue('Proxy'), proxyUrl, '=>', target)
-
-    servers.push(server)
 
     if (domain && domain.publicUrl !== undefined) {
       publicUrlCallbacks.forEach(cb => cb(proxyUrl, domain.publicUrl as string))
     }
+    })
+
+    servers.push(server)
   }
 
   for (const redirect of config.reverseProxy.redirects) {
