@@ -98,7 +98,13 @@ export async function startServer () {
   })
 
   app.post('/api/apps', async (req, res) => {
-    const app = await addApp(req.body.cwd)
+    let app = getAppByCwd(req.body.cwd)
+    if (app) {
+      consola.error(`App already exists`, req.body.cwd)
+      res.status(500).json({ error: 'App already exists' })
+      return
+    }
+    app = await addApp(req.body.cwd)
     res.json({
       success: true,
       data: {
@@ -110,6 +116,7 @@ export async function startServer () {
   app.post('/api/apps/restart', async (req, res) => {
     const app = getAppByCwd(req.body.cwd)
     if (!app) {
+      consola.error(`App not found`, req.body.cwd)
       res.status(404).json({ error: 'App not found' })
       return
     }
