@@ -111,6 +111,16 @@ export async function startServer () {
     })
   })
 
+  app.use((req, res) => {
+    res.status(500)
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    res.send(renderTemplate(path.resolve(__dirname, `../templates/error.ejs`), {
+      errorMessage: `Not found`,
+      errorStack: `${req.protocol}://${host}${req.path}`
+    }))
+    res.end()
+  })
+
   const server = http.createServer(app)
   server.listen(port, host, async () => {
     consola.info('Deamon server listening on', serverUrl)
