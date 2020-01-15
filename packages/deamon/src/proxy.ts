@@ -37,11 +37,14 @@ class Replacer {
   }
 
   build () {
-    this.reg = new RegExp(`(http|ws)s?://(${this.regValues.join('|')})`, 'g')
+    this.reg = new RegExp(`((http|ws)s?://)?(${this.regValues.join('|')})`, 'g')
   }
 
   getReplace (secure: boolean) {
-    const replaceFn = (matched: string, g1: string, g2: string) => `${g1}${secure ? 's' : ''}://${this.map[g2]}`
+    const replaceFn = (matched: string, g1: string, g2: string, g3: string) => {
+      const proto = g1 ? `${g2}${secure ? 's' : ''}://` : ''
+      return `${proto}${this.map[g3]}`
+    }
     return (text: string) => text.replace(this.reg, replaceFn)
   }
 }
