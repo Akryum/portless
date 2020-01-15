@@ -64,10 +64,28 @@ module.exports = {
 }
 ```
 
-Then run the `serve` command in your project root:
+Start the deamon (it will auto-start on login):
 
 ```bash
-portless serve
+portless start
+```
+
+Register your project (current folder):
+
+```bash
+portless add
+```
+
+Refresh your project if you changed the configuration:
+
+```bash
+portless refresh
+```
+
+Stop and uninstall the deamon:
+
+```bash
+portless stop
 ```
 
 ## URL rewriting
