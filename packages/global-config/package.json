@@ -1,6 +1,6 @@
 {
   "name": "@portless/global-config",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@hapi/joi": "^17.0.2",
-    "@portless/util": "^0.3.1",
+    "@portless/util": "^0.4.0",
     "consola": "^2.11.3",
     "fs-extra": "^8.1.0",
     "lodash": "^4.17.15"

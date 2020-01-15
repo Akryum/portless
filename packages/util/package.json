@@ -1,6 +1,6 @@
 {
   "name": "@portless/util",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "(Shared utils) Easy local domains and reverse proxy with HTTPS support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
