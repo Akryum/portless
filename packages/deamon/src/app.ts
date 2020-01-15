@@ -23,14 +23,11 @@ export class App {
 
     if (this.config.domains && this.ngrok) {
       for (const domainConfig of this.config.domains) {
-        if (domainConfig.public && domainConfig.local) {
+        if (domainConfig.public) {
           await this.ngrok.addTunnel({
             publicDomain: domainConfig.public,
-            targetDomain: domainConfig.local,
+            targetDomain: process.env.PORTLESS_DEAMON_URL as string,
           })
-        }
-        if (domainConfig.public && !domainConfig.local) {
-          consola.warn(`Domain config has publicUrl ${domainConfig.public} but no localUrl - ngrok tunnel skipped`)
         }
       }
     }

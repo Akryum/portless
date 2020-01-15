@@ -21,8 +21,16 @@ export async function startServer () {
   const port = await getPortPromise({
     port: config.port,
   })
+  // @ts-ignore
+  process.env.PORTLESS_DEAMON_PORT = port
 
   const host = config.host || 'localhost'
+  // @ts-ignore
+  process.env.PORTLESS_DEAMON_HOST = port
+
+  const serverUrl = `http://${host}:${port}`
+  // @ts-ignore
+  process.env.PORTLESS_DEAMON_URL = serverUrl
 
   const app = express()
 
@@ -100,7 +108,7 @@ export async function startServer () {
 
   const server = http.createServer(app)
   server.listen(port, host, async () => {
-    consola.info('Deamon server listening on', `${host}:${port}`)
+    consola.info('Deamon server listening on', serverUrl)
 
     await restoreApps()
 
