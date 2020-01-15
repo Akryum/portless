@@ -1,5 +1,5 @@
 export function getDomain (url: string): string {
-  const result = /\w+:\/\/([\w._-]+)/.exec(url)
+  const result = /\w+:\/\/([\w.:_-]+)/.exec(url)
   if (result) {
     return result[1]
   }

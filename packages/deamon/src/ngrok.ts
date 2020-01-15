@@ -4,7 +4,7 @@ import ngrok from 'ngrok'
 import consola from 'consola'
 import chalk from 'chalk'
 import { PortlessConfig } from '@portless/config'
-import { ThenType } from '@portless/util'
+import { ThenType, getDomain } from '@portless/util'
 
 export interface TunnelConfig {
   publicDomain: string
@@ -36,7 +36,7 @@ export async function useNgrok (config: PortlessConfig) {
         region: config.ngrok.region,
         ...useHttps ? {
           proto: 'tls',
-          addr: tunnel.targetDomain,
+          addr: getDomain(tunnel.targetDomain),
           key: keyFile,
           crt: certFile,
         } : {
