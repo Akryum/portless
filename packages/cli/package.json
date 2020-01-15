@@ -18,6 +18,9 @@
     "url": "https://github.com/Akryum/portless.git",
     "directory": "packages/cli"
   },
+  "engines": {
+    "node": ">=12"
+  },
   "bin": {
     "portless": "dist/bin.js"
   },

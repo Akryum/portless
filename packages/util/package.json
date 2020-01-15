@@ -15,6 +15,9 @@
     "url": "https://github.com/Akryum/portless.git",
     "directory": "packages/util"
   },
+  "engines": {
+    "node": ">=12"
+  },
   "publishConfig": {
     "access": "public"
   },

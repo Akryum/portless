@@ -18,6 +18,9 @@
     "url": "https://github.com/Akryum/portless.git",
     "directory": "packages/deamon"
   },
+  "engines": {
+    "node": ">=12"
+  },
   "scripts": {
     "build": "rimraf dist *.tsbuildinfo && tsc -d",
     "prepublishOnly": "yarn build",
