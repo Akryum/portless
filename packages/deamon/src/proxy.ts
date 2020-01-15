@@ -26,6 +26,8 @@ export interface ReverseProxy {
 const proxies: ReverseProxy[] = []
 const domainMap: { [key: string]: ReverseProxy } = {}
 
+const noReplaceReg = /.(png|jpe?g|gif|webp|svg|mp4|webm|ogg|mp3|wav|flac|aac|woff2?|eot|ttf|otf)/
+
 class Replacer {
   regValues: string[] = []
   reg: RegExp
@@ -129,6 +131,11 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
     }
 
     function getReplacer (req: IncomingMessage, publicReplacer: Replacer, localReplacer: Replacer) {
+      const url = req.url
+      if (url && url.match(noReplaceReg)) {
+        return
+      }
+
       const domainType = getDomainType(req)
       if (domainType === 'public') {
         return publicReplacer
@@ -153,6 +160,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
 
       if (replacer) {
         // @TODO shouldRewrite was removed because `writeHead` is called after writting for some reason
+
         const secure = isSecure(req)
         const replace = replacer.getReplace(secure)
 
