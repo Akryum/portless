@@ -1,4 +1,4 @@
-import http from 'http'
+import http, { IncomingMessage } from 'http'
 import express from 'express'
 import bodyParser from 'body-parser'
 import { getPortPromise } from 'portfinder'
@@ -121,12 +121,12 @@ export async function startServer () {
     }  
   })
 
-  server.on('upgrade', (req, socket, head) => {
-    const host = req.get('host')
+  server.on('upgrade', (req: IncomingMessage, socket, head) => {
+    const host = req.headers.host
     if (host) {
       const proxy = getProxy(host)
       if (proxy) {
-        consola.log(`${req.protocol}://${host}${req.path}`, chalk.cyan('PROXY'), proxy.targetDomain)
+        consola.log(`(ws) ${host}${req.url}`, chalk.cyan('PROXY'), proxy.targetDomain)
         proxy.wsMiddleware(req, socket, head)
         return
       }
