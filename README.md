@@ -6,7 +6,7 @@ Easy local domains with superpowers
 - Automatic certificates with [Let's Encrypt](https://letsencrypt.org/) for public hosts
 - Automatic URL rewriting in resources sent over the network
 - Automatic Cookie rewriting
-- Background deamon
+- Background daemon
 
 ## Installation
 
@@ -65,7 +65,7 @@ module.exports = {
 }
 ```
 
-Start the deamon (it will auto-start on login):
+Start the daemon (it will auto-start on login):
 
 ```bash
 portless start
@@ -83,7 +83,7 @@ Refresh your project if you changed the configuration:
 portless refresh
 ```
 
-Stop and uninstall the deamon:
+Stop and uninstall the daemon:
 
 ```bash
 portless stop
