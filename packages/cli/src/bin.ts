@@ -4,6 +4,8 @@ import cac from 'cac'
 import { startDaemon, stopDaemon } from './daemon'
 import { addApp, removeApp, restartApp } from './app'
 
+process.env.NODE_ENV = 'production'
+
 const cli = cac()
 
 cli.command('start', 'Start Deamon')
