@@ -27,6 +27,8 @@ const domainMap: { [key: string]: ReverseProxy } = {}
 
 const noReplaceReg = /\.(png|jpe?g|gif|webp|svg|mp4|webm|ogg|mp3|wav|flac|aac|woff2?|eot|ttf|otf)/
 
+const forceHttpsMap: { [key: string]: boolean } = {}
+
 class Replacer {
   regValues: string[] = []
   reg: RegExp
@@ -292,6 +294,13 @@ export function getProxy (incoming: string): ReverseProxy | null {
 }
 
 function isSecure (req: IncomingMessage) {
+  if (forceHttpsMap[req.headers.host || '']) {
+    return true
+  }
   const proto = req.headers['x-forwarded-proto']
   return proto === 'https' || proto === 'wss'
+}
+
+export function forceHttps (domain: string, https: boolean) {
+  forceHttpsMap[domain] = https
 }

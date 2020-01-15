@@ -2,7 +2,7 @@ import consola from 'consola'
 import { loadConfig, PortlessConfig } from '@portless/config'
 import { loadGlobalConfig, saveGlobalConfig } from '@portless/global-config'
 import { UseGreenlock, useGreenlock } from './greenlock'
-import { UseReverseProxy, useReverseProxy } from './proxy'
+import { UseReverseProxy, useReverseProxy, forceHttps } from './proxy'
 import { UseNgrok, useNgrok } from './ngrok'
 
 export class App {
@@ -24,10 +24,13 @@ export class App {
     if (this.config.domains && this.ngrok) {
       for (const domainConfig of this.config.domains) {
         if (domainConfig.public) {
-          await this.ngrok.addTunnel({
+          const result = await this.ngrok.addTunnel({
             publicDomain: domainConfig.public,
             targetDomain: process.env.PORTLESS_DEAMON_URL as string,
           })
+          if (result) {
+            forceHttps(domainConfig.public, result.useHttps)
+          }
         }
       }
     }

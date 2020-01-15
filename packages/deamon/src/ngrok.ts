@@ -47,7 +47,11 @@ export async function useNgrok (config: PortlessConfig) {
         hostname: tunnel.publicDomain,
       })
       consola.log(chalk.magenta('NGROK'), chalk.bold(url), '⇒', chalk.blue.bold(tunnel.targetDomain))
-      return url
+      return {
+        ...tunnel,
+        ngrokUrl: url,
+        useHttps,
+      }
     } catch (e) {
       consola.error(e)
     }
