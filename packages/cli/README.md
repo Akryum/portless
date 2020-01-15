@@ -17,7 +17,7 @@ Commands:
   stop          Stop Deamon
   add           Add project in current folder
   remove        Remove project in current folder
-  restart       Restart project in current folder
+  refresh       Restart project in current folder
 
 For more info, run any command with the `--help` flag:
   $ portless start --help
