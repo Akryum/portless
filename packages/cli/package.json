@@ -1,6 +1,6 @@
 {
   "name": "@portless/cli",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Easy local domains and reverse proxy with HTTPS support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -30,7 +30,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@portless/deamon": "^0.4.3",
+    "@portless/deamon": "^0.4.4",
     "@portless/global-config": "^0.4.3",
     "@portless/util": "^0.4.3",
     "cac": "^6.5.4",
