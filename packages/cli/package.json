@@ -30,7 +30,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@portless/deamon": "^0.4.5",
+    "@portless/daemon": "^0.4.5",
     "@portless/global-config": "^0.4.3",
     "@portless/util": "^0.4.3",
     "cac": "^6.5.4",

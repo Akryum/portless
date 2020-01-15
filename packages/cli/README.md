@@ -12,9 +12,9 @@ Usage:
   $ portless <command> [options]
 
 Commands:
-  start         Start Deamon
-  start-inline  Start server directly (no-deamon)
-  stop          Stop Deamon
+  start         Start Daemon
+  start-inline  Start server directly (no-daemon)
+  stop          Stop Daemon
   add           Add project in current folder
   remove        Remove project in current folder
   refresh       Restart project in current folder

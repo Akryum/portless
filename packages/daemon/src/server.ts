@@ -31,18 +31,18 @@ export async function startServer () {
     port: config.port,
   })
   // @ts-ignore
-  process.env.PORTLESS_DEAMON_PORT = port
+  process.env.PORTLESS_DAEMON_PORT = port
 
   const host = config.host || 'localhost'
   // @ts-ignore
-  process.env.PORTLESS_DEAMON_HOST = port
+  process.env.PORTLESS_DAEMON_HOST = port
 
   const serverUrl = `http://${host}:${port}`
   // @ts-ignore
-  process.env.PORTLESS_DEAMON_URL = serverUrl
+  process.env.PORTLESS_DAEMON_URL = serverUrl
 
   // Proxy for child processes
-  process.env.HTTP_PROXY = `${process.env.PORTLESS_DEAMON_URL}/proxy.pac`
+  process.env.HTTP_PROXY = `${process.env.PORTLESS_DAEMON_URL}/proxy.pac`
   // Exclude ngrok client
   process.env.NO_PROXY = '127.0.0.1'
 
@@ -150,7 +150,7 @@ export async function startServer () {
 
   const server = http.createServer(app)
   server.listen(port, host, async () => {
-    consola.info('Deamon server listening on', serverUrl)
+    consola.info('Daemon server listening on', serverUrl)
 
     await restoreApps()
 

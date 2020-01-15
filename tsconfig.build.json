@@ -10,6 +10,6 @@
     { "path": "./packages/global-config" },
     { "path": "./packages/template" },
     { "path": "./packages/cli" },
-    { "path": "./packages/deamon" },
+    { "path": "./packages/daemon" },
   ],
 }

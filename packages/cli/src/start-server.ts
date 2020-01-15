@@ -1,3 +1,3 @@
-import { startServer } from '@portless/deamon'
+import { startServer } from '@portless/daemon'
 
 startServer()

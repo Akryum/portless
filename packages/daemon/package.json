@@ -1,7 +1,7 @@
 {
-  "name": "@portless/deamon",
+  "name": "@portless/daemon",
   "version": "0.4.5",
-  "description": "(Background deamon) Easy local domains and reverse proxy with HTTPS support",
+  "description": "(Background daemon) Easy local domains and reverse proxy with HTTPS support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Guillaume Chau",
@@ -16,7 +16,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Akryum/portless.git",
-    "directory": "packages/deamon"
+    "directory": "packages/daemon"
   },
   "engines": {
     "node": ">=12"

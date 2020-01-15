@@ -8,18 +8,18 @@ process.env.NODE_ENV = 'production'
 
 const cli = cac()
 
-cli.command('start', 'Start Deamon')
+cli.command('start', 'Start Daemon')
   .action(async () => {
     await startDaemon()
   })
 
-cli.command('start-inline', 'Start server directly (no-deamon)')
+cli.command('start-inline', 'Start server directly (no-daemon)')
   .action(async () => {
     await stopDaemon()
     require('./start-server')
   })
 
-cli.command('stop', 'Stop Deamon')
+cli.command('stop', 'Stop Daemon')
   .action(async () => {
     await stopDaemon()
   })

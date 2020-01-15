@@ -26,7 +26,7 @@ export class App {
         if (domainConfig.public) {
           const result = await this.ngrok.addTunnel({
             publicDomain: domainConfig.public,
-            targetDomain: process.env.PORTLESS_DEAMON_URL as string,
+            targetDomain: process.env.PORTLESS_DAEMON_URL as string,
           })
           if (result) {
             forceHttps(domainConfig.public, result.useHttps)
