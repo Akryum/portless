@@ -8,8 +8,6 @@ import { renderTemplate } from '@portless/template'
 import { PortlessConfig } from '@portless/config'
 import { escapeReg, ThenType } from '@portless/util'
 
-const acmeChallengePath = '/.well-known/acme-challenge/'
-
 export interface ReverseProxyOptions {
   publicKeyId?: string
 }
@@ -17,6 +15,7 @@ export interface ReverseProxyOptions {
 export type IncomingDomainType = 'public' | 'local'
 
 export interface ReverseProxy {
+  publicKeyId?: string
   targetDomain: string
   incomingDomains: { domain: string, type: IncomingDomainType }[]
   webMiddleware: (req: IncomingMessage, res: ServerResponse) => Promise<void> | void
@@ -77,18 +76,22 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
     })
 
     proxy.on('error', (err, req, res) => {
-      res.writeHead(500, {
-        ContentType: 'text/html; charset=utf-8',
-      })
-      let errorMessage = err.message
-      if (errorMessage.startsWith('getaddrinfo ENOTFOUND')) {
-        errorMessage = `Can't find host <b>${errorMessage.substr('getaddrinfo ENOTFOUND'.length + 1)}</b>`
-      }
+      try {
+        res.writeHead(500, {
+          ContentType: 'text/html; charset=utf-8',
+        })
+        let errorMessage = err.message
+        if (errorMessage.startsWith('getaddrinfo ENOTFOUND')) {
+          errorMessage = `Can't find host <b>${errorMessage.substr('getaddrinfo ENOTFOUND'.length + 1)}</b>`
+        }
 
-      res.end(renderTemplate(path.resolve(__dirname, '../templates/error.ejs'), {
-        errorMessage,
-        errorStack: err.stack,
-      }))
+        res.end(renderTemplate(path.resolve(__dirname, '../templates/error.ejs'), {
+          errorMessage,
+          errorStack: err.stack,
+        }))
+      } catch (e) {
+        consola.error(e)
+      }
       consola.error(`Error proxying ${req.url}:`)
       consola.log(err.stack)
     })
@@ -145,16 +148,6 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
     }
 
     const webMiddleware = (req: IncomingMessage, res: ServerResponse) => {
-      // Acme challenge to issue certificates
-      if (options.publicKeyId) {
-        if (req.url && req.url.startsWith(acmeChallengePath)) {
-          const id = req.url.substr(acmeChallengePath.length)
-          res.write(`${id}.${options.publicKeyId}`)
-          res.end()
-          return
-        }
-      }
-
       // Replace links
       const replacer = getReplacer(req, targetToPublic, targetToLocal)
 
@@ -233,6 +226,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
     }
 
     const proxyInfo: ReverseProxy = {
+      publicKeyId: options.publicKeyId,
       targetDomain,
       incomingDomains: [],
       webMiddleware,

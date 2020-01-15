@@ -32,7 +32,8 @@
     "http-proxy": "^1.18.0",
     "ngrok": "^3.2.7",
     "pac-proxy-agent": "^3.0.1",
-    "portfinder": "^1.0.25"
+    "portfinder": "^1.0.25",
+    "selfsigned": "^1.10.7"
   },
   "devDependencies": {
     "@types/express": "^4.17.2",
