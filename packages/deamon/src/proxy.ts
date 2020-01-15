@@ -6,7 +6,7 @@ import chalk from 'chalk'
 import path from 'path'
 import { renderTemplate } from '@portless/template'
 import { PortlessConfig } from '@portless/config'
-import { escapeReg, ThenType } from '@portless/util'
+import { escapeReg, ThenType, getParentLevelDomain } from '@portless/util'
 
 export interface ReverseProxyOptions {
   publicKeyId?: string
@@ -40,10 +40,13 @@ class Replacer {
   }
 
   build () {
-    this.reg = new RegExp(`((http|ws)s?://)?(${this.regValues.join('|')})`, 'g')
+    const dedupedValues = Array.from(new Set(this.regValues))
+    this.reg = new RegExp(`((http|ws)s?://)?(${dedupedValues.join('|')})`, 'g')
   }
 
   getReplace (secure: boolean) {
+    if (!this.reg) this.build()
+
     const replaceFn = (matched: string, g1: string, g2: string, g3: string) => {
       const proto = g1 ? `${g2}${secure ? 's' : ''}://` : ''
       return `${proto}${this.map[g3]}`
@@ -70,10 +73,6 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
       agent: pacProxyAgent,
       changeOrigin: true,
       secure: false,
-      cookieDomainRewrite: {
-        // Remove cookie domains
-        '*': '',
-      },
       ws: true,
     })
 
@@ -100,8 +99,10 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
 
     // Rewrite URL in responses
     const targetToPublic: Replacer = new Replacer()
+    const cookieTargetToPublic: Replacer = new Replacer()
     const publicToTarget: Replacer = new Replacer()
     const targetToLocal: Replacer = new Replacer()
+    const cookieTargetToLocal: Replacer = new Replacer()
     const localToTarget: Replacer = new Replacer()
     if (config.domains) {
       for (const domainConfig of config.domains) {
@@ -109,28 +110,34 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
         if (domainConfig.public) {
           targetToPublic.add(domainConfig.target, domainConfig.public)
           publicToTarget.add(domainConfig.public, domainConfig.target)
+          // Cookie domains
+          cookieTargetToPublic.add(
+            `.${getParentLevelDomain(domainConfig.target)}`,
+            `.${getParentLevelDomain(domainConfig.public)}`,
+          )
           // Spacial syntax
           targetToPublic.add(`${domainConfig.id}.portless`, domainConfig.public)
         }
         if (domainConfig.local) {
           targetToLocal.add(domainConfig.target, domainConfig.local)
           localToTarget.add(domainConfig.local, domainConfig.target)
+          // Cookie domains
+          cookieTargetToLocal.add(
+            `.${getParentLevelDomain(domainConfig.target)}`,
+            `.${getParentLevelDomain(domainConfig.local)}`,
+          )
           // Spacial syntax
           targetToLocal.add(`${domainConfig.id}.portless`, domainConfig.local)
         }
       }
     }
-    targetToPublic.build()
-    publicToTarget.build()
-    targetToLocal.build()
-    localToTarget.build()
 
-    function getDomainType (req: IncomingMessage) {
+    function getIncomingDomain (req: IncomingMessage) {
       const host = req.headers.host
       if (host) {
         const incomingDomain = proxyInfo.incomingDomains.find(d => d.domain === host)
         if (incomingDomain) {
-          return incomingDomain.type
+          return incomingDomain
         }
       }
     }
@@ -141,23 +148,27 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
         return
       }
 
-      const domainType = getDomainType(req)
-      if (domainType === 'public') {
-        return publicReplacer
-      } else if (domainType === 'local') {
-        return localReplacer
+      const domain = getIncomingDomain(req)
+      if (domain) {
+        if (domain.type === 'public') {
+          return publicReplacer
+        } else if (domain.type === 'local') {
+          return localReplacer
+        }
       }
     }
 
     const webMiddleware = (req: IncomingMessage, res: ServerResponse) => {
       // Replace links
       const replacer = getReplacer(req, targetToPublic, targetToLocal)
+      const cookieReplacer = getReplacer(req, cookieTargetToPublic, cookieTargetToLocal)
 
-      if (replacer) {
+      if (replacer && cookieReplacer) {
         // @TODO shouldRewrite was removed because `writeHead` is called after writting for some reason
 
         const secure = isSecure(req)
         const replace = replacer.getReplace(secure)
+        const replaceCookie = cookieReplacer.getReplace(secure)
 
         const _writeHead = res.writeHead.bind(res)
         res.writeHead = (...args: any) => {
@@ -176,6 +187,22 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
           }
           if (headers && headers['access-control-allow-origin']) {
             headers['access-control-allow-origin'] = replace(headers['access-control-allow-origin'])
+          }
+
+          // Rewrite cookies
+          let setCookie: string[] = res.getHeader('set-cookie') as string[]
+          consola.log('set-cookie', setCookie)
+          if (setCookie) {
+            consola.log(cookieReplacer)
+            res.setHeader('set-cookie', setCookie.map(cookie => replaceCookie(cookie)))
+            consola.log('new set-cookie', res.getHeader('set-cookie'))
+          }
+          setCookie = headers && headers['set-cookie']
+          consola.log('set-cookie', setCookie)
+          if (setCookie) {
+            consola.log(cookieReplacer)
+            headers['set-cookie'] = setCookie.map(cookie => replaceCookie(cookie))
+            consola.log('new set-cookie', headers['set-cookie'])
           }
 
           return _writeHead(...args)
