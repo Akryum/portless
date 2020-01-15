@@ -9,6 +9,11 @@
   "publishConfig": {
     "access": "public"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Akryum/portless.git",
+    "directory": "packages/global-config"
+  },
   "scripts": {
     "build": "rimraf dist *.tsbuildinfo && tsc -d",
     "prepublishOnly": "yarn build"

@@ -10,6 +10,11 @@
     "https",
     "localhost"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Akryum/portless.git",
+    "directory": "packages/util"
+  },
   "publishConfig": {
     "access": "public"
   },
