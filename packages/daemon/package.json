@@ -1,6 +1,6 @@
 {
   "name": "@portless/daemon",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "(Background daemon) Easy local domains and reverse proxy with HTTPS support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
