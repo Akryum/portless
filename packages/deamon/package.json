@@ -1,6 +1,6 @@
 {
   "name": "@portless/deamon",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "(Background deamon) Easy local domains and reverse proxy with HTTPS support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
