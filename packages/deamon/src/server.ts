@@ -32,6 +32,11 @@ export async function startServer () {
   // @ts-ignore
   process.env.PORTLESS_DEAMON_URL = serverUrl
 
+  // Proxy for child processes
+  process.env.HTTP_PROXY = `${process.env.PORTLESS_DEAMON_URL}/proxy.pac`
+  // Exclude ngrok client
+  process.env.NO_PROXY = '127.0.0.1'
+
   const app = express()
 
   app.use((req, res, next) => {
