@@ -34,7 +34,7 @@ cli.command('remove', 'Remove project in current folder')
     await removeApp(process.cwd())
   })
 
-cli.command('restart', 'Restart project in current folder')
+cli.command('refresh', 'Restart project in current folder')
   .action(async () => {
     await restartApp(process.cwd())
   })
