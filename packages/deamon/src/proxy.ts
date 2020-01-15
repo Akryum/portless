@@ -26,7 +26,7 @@ export interface ReverseProxy {
 const proxies: ReverseProxy[] = []
 const domainMap: { [key: string]: ReverseProxy } = {}
 
-const noReplaceReg = /.(png|jpe?g|gif|webp|svg|mp4|webm|ogg|mp3|wav|flac|aac|woff2?|eot|ttf|otf)/
+const noReplaceReg = /\.(png|jpe?g|gif|webp|svg|mp4|webm|ogg|mp3|wav|flac|aac|woff2?|eot|ttf|otf)/
 
 class Replacer {
   regValues: string[] = []
