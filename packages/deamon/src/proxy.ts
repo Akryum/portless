@@ -191,18 +191,12 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
 
           // Rewrite cookies
           let setCookie: string[] = res.getHeader('set-cookie') as string[]
-          consola.log('set-cookie', setCookie)
           if (setCookie) {
-            consola.log(cookieReplacer)
             res.setHeader('set-cookie', setCookie.map(cookie => replaceCookie(cookie)))
-            consola.log('new set-cookie', res.getHeader('set-cookie'))
           }
           setCookie = headers && headers['set-cookie']
-          consola.log('set-cookie', setCookie)
           if (setCookie) {
-            consola.log(cookieReplacer)
             headers['set-cookie'] = setCookie.map(cookie => replaceCookie(cookie))
-            consola.log('new set-cookie', headers['set-cookie'])
           }
 
           return _writeHead(...args)
