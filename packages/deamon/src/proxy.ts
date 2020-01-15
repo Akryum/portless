@@ -182,6 +182,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
           return _writeHead(...args)
         }
 
+        let rawBody: string = ''
         const _write = res.write.bind(res)
         res.write = (data: string | Buffer) => {
           if (shouldRewrite) {
@@ -191,8 +192,8 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
             } else {
               text = data
             }
-            const newText = replacer.replace(text)
-            return _write(newText)
+            rawBody += text
+            return true
           } else {
             return _write(data)
           }
@@ -200,6 +201,10 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
 
         const _end = res.end.bind(res)
         res.end = () => {
+          if (shouldRewrite && rawBody) {
+            const newText = replacer.replace(rawBody)
+            _write(newText)
+          }
           _end()
         }
       }
