@@ -1,6 +1,6 @@
 {
   "name": "@portless/deamon",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "(Background deamon) Easy local domains and reverse proxy with HTTPS support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -19,10 +19,10 @@
     "test": "jest"
   },
   "dependencies": {
-    "@portless/config": "^0.2.0",
-    "@portless/global-config": "^0.2.0",
-    "@portless/template": "^0.2.0",
-    "@portless/util": "^0.2.0",
+    "@portless/config": "^0.3.0",
+    "@portless/global-config": "^0.3.0",
+    "@portless/template": "^0.3.0",
+    "@portless/util": "^0.3.0",
     "body-parser": "^1.19.0",
     "chalk": "^3.0.0",
     "consola": "^2.11.3",
