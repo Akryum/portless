@@ -16,9 +16,6 @@ export async function useGreenlock (config: PortlessConfig) {
       if (domainConfig.public) {
         secureDomains.push(domainConfig.public)
       }
-      if (domainConfig.local) {
-        secureDomains.push(domainConfig.local)
-      }
     }
   }
   
