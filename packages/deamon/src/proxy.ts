@@ -37,11 +37,12 @@ class Replacer {
   }
 
   build () {
-    this.reg = new RegExp(`(${this.regValues.join('|')})`, 'g')
+    this.reg = new RegExp(`(http|ws)s?://(${this.regValues.join('|')})`, 'g')
   }
 
-  replace (text: string) {
-    return text.replace(this.reg, (matched) => this.map[matched])
+  getReplace (secure: boolean) {
+    const replaceFn = (matched: string, g1: string, g2: string) => `${g1}${secure ? 's' : ''}://${this.map[g2]}`
+    return (text: string) => text.replace(this.reg, replaceFn)
   }
 }
 
@@ -149,6 +150,9 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
 
       if (replacer) {
         // @TODO shouldRewrite was removed because `writeHead` is called after writting for some reason
+        const secure = isSecure(req)
+        const replace = replacer.getReplace(secure)
+
         const _writeHead = res.writeHead.bind(res)
         res.writeHead = (...args: any) => {
           const headers = (args.length > 2) ? args[2] : args[1]
@@ -162,10 +166,10 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
           // Replace CORS header
           const corsHeader = res.getHeader('access-control-allow-origin')
           if (corsHeader && typeof corsHeader === 'string') {
-            res.setHeader('access-control-allow-origin', replacer.replace(corsHeader))
+            res.setHeader('access-control-allow-origin', replace(corsHeader))
           }
           if (headers && headers['access-control-allow-origin']) {
-            headers['access-control-allow-origin'] = replacer.replace(headers['access-control-allow-origin'])
+            headers['access-control-allow-origin'] = replace(headers['access-control-allow-origin'])
           }
 
           return _writeHead(...args)
@@ -186,7 +190,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
 
         const _end = res.end.bind(res)
         res.end = () => {
-          _write(replacer.replace(rawBody))
+          _write(replace(rawBody))
           _end()
         }
       }
@@ -197,15 +201,19 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
 
     const wsMiddleware = (req: IncomingMessage, socket: any, head: any) => {
       const replacer = getReplacer(req, publicToTarget, localToTarget)
-
+      
       if (replacer) {
+        const secure = isSecure(req)
+        const replace = replacer.getReplace(secure)
+
         if (req.headers.host) {
-          req.headers.host = replacer.replace(req.headers.host)
+          req.headers.host = replace(req.headers.host)
         }
+
         if (Array.isArray(req.headers.origin)) {
-          req.headers.origin = req.headers.origin.map(value => replacer.replace(value))
+          req.headers.origin = req.headers.origin.map(value => replace(value))
         } else if (req.headers.origin) {
-          req.headers.origin = replacer.replace(req.headers.origin)
+          req.headers.origin = replace(req.headers.origin)
         }
       }
 
@@ -276,4 +284,9 @@ export type UseReverseProxy = ThenType<typeof useReverseProxy>
 
 export function getProxy (incoming: string): ReverseProxy | null {
   return domainMap[incoming]
+}
+
+function isSecure (req: IncomingMessage) {
+  const proto = req.headers['x-forwarded-proto']
+  return proto === 'https' || proto === 'wss'
 }
