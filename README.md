@@ -5,6 +5,7 @@ Easy local domains with superpowers
 - Expose public hosts with [ngrok](https://ngrok.com)
 - Automatic certificates with [Let's Encrypt](https://letsencrypt.org/) for public hosts
 - Automatic URL rewriting in resources sent over the network
+- Automatic Cookie rewriting
 - Background deamon
 
 ## Installation
