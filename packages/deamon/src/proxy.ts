@@ -148,26 +148,15 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
       const replacer = getReplacer(req, targetToPublic, targetToLocal)
 
       if (replacer) {
-        let shouldRewrite = false
-        
+        // @TODO shouldRewrite was removed because `writeHead` is called after writting for some reason
         const _writeHead = res.writeHead.bind(res)
         res.writeHead = (...args: any) => {
           const headers = (args.length > 2) ? args[2] : args[1]
 
-          // Check content type to enable rewriting
-          const contentType = res.getHeader('content-type') || (headers ? headers['content-type'] : undefined)
-          shouldRewrite = contentType && [
-            'text/html',
-            'text/css',
-            'application/javascript',
-          ].some(type => contentType.includes(type))
-
-          if (shouldRewrite) {
-            // Remove content-length heander since it will change
-            res.removeHeader('content-length')
-            if (headers) {
-              delete headers['content-length']
-            }
+          // R<emove content-length heander since it will change
+          res.removeHeader('content-length')
+          if (headers) {
+            delete headers['content-length']
           }
 
           // Replace CORS header
@@ -185,26 +174,19 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
         let rawBody: string = ''
         const _write = res.write.bind(res)
         res.write = (data: string | Buffer) => {
-          if (shouldRewrite) {
-            let text: string
-            if (data instanceof Buffer) {
-              text = data.toString()
-            } else {
-              text = data
-            }
-            rawBody += text
-            return true
+          let text: string
+          if (data instanceof Buffer) {
+            text = data.toString()
           } else {
-            return _write(data)
+            text = data
           }
+          rawBody += text
+          return true
         }
 
         const _end = res.end.bind(res)
         res.end = () => {
-          if (shouldRewrite && rawBody) {
-            const newText = replacer.replace(rawBody)
-            _write(newText)
-          }
+          _write(replacer.replace(rawBody))
           _end()
         }
       }
