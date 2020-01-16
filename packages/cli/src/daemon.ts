@@ -26,12 +26,12 @@ export async function startDaemon () {
   // Start script and register on user session login
   const node = process.execPath
   const daemonFile = path.join(__dirname, './start-server')
-  startup.create('hotel', node, [daemonFile], getRcFile('daemon.log'))
+  startup.create('portless', node, [daemonFile], getRcFile('daemon.log'))
 
   if (requestVersion) {
     port = await checkPortFile(requestVersion)
   }
-  
+
   consola.info(`Started http://${host}:${port}`)
 }
 
