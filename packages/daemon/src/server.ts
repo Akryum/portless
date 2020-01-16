@@ -49,31 +49,41 @@ export async function startServer () {
   const app = express()
 
   app.use((req, res, next) => {
-    const host = req.get('host')
-    if (host) {
-      const proxy = getProxy(host)
+    const vhost = req.get('host')
+    if (vhost && vhost !== `${host}:${port}`) {
+      const proxy = getProxy(vhost)
       if (proxy) {
         // Acme challenge to issue certificates
         if (proxy.publicKeyId) {
           if (req.url && req.url.startsWith(acmeChallengePath)) {
             const id = req.url.substr(acmeChallengePath.length)
-            consola.log(chalk.green('Certificate ACME challenge', `${host}${req.url}`))
+            consola.log(chalk.green('Certificate ACME challenge', `${vhost}${req.url}`))
             res.write(`${id}.${proxy.publicKeyId}`)
             res.end()
             return
           }
         }
 
-        consola.log(`${req.protocol}://${host}${req.path}`, chalk.cyan('PROXY'), proxy.targetDomain)
+        consola.log(`${req.protocol}://${vhost}${req.path}`, chalk.cyan('PROXY'), proxy.targetDomain)
         proxy.webMiddleware(req, res)
         return
       }
+
+      // Host not found
+      consola.error(`VHost ${vhost} not found`)
+      res.status(500)
+      res.setHeader('Content-Type', 'text/html; charset=utf-8')
+      res.send(renderTemplate(path.resolve(__dirname, `../templates/vhost-not-found.ejs`), {
+        host: vhost,
+      }))
+      res.end()
+      return
     }
     next()
   })
 
   app.use(bodyParser.json())
-  
+
   app.get('/.well-known/status', (req, res) => {
     res.json({ status: 'live' })
   })
@@ -139,7 +149,7 @@ export async function startServer () {
   })
 
   app.use((req, res) => {
-    res.status(500)
+    res.status(404)
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     res.send(renderTemplate(path.resolve(__dirname, `../templates/error.ejs`), {
       errorMessage: `Not found`,
@@ -160,7 +170,7 @@ export async function startServer () {
         liveVersion: portData.requestVersion,
         port,
       })
-    }  
+    }
   })
 
   server.on('connect', (req: IncomingMessage, socket: Socket, head: any) => {
