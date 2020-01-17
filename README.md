@@ -71,6 +71,8 @@ Start the daemon (it will auto-start on login):
 portless start
 ```
 
+Add `http://localhost:5656/proxy.pac` to your network proxy settings.
+
 Register your project (current folder):
 
 ```bash
