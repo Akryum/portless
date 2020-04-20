@@ -66,6 +66,9 @@ export async function useGreenlock (config: PortlessConfig) {
       } else if (event === 'cert_issue') {
         consola.success(chalk.green('Certificate issued'), details)
         certificateIssuedCallbacks.forEach(cb => cb())
+      } else if (event === 'cert_renewal') {
+        consola.success(chalk.green("Certificate renewed"), details);
+        certificateIssuedCallbacks.forEach((cb) => cb());
       } else {
         consola.info(chalk.blue(event), details)
       }
@@ -79,6 +82,13 @@ export async function useGreenlock (config: PortlessConfig) {
   })
 
   await greenlock.add(site)
+
+  let needsRenewing = false
+  const [siteData] = await greenlock._find({ subject: site.subject })
+  if (siteData && siteData.renewAt < Date.now()) {
+    needsRenewing = true
+    consola.info('Certificate needs to be renewed for site', site.subject)
+  }
 
   const accountFile = path.resolve(configDir, `accounts/acme${greenlockConfig.staging ? '-staging' : ''}-v02.api.letsencrypt.org/directory`, `${greenlockConfig.maintainerEmail}.json`)
 
@@ -106,6 +116,7 @@ export async function useGreenlock (config: PortlessConfig) {
   return {
     publicKeyId,
     destroy,
+    needsRenewing,
     onCertificateIssued,
   }
 }

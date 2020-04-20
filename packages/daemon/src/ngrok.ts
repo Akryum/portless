@@ -11,7 +11,7 @@ export interface TunnelConfig {
   targetDomain: string
 }
 
-export async function useNgrok (config: PortlessConfig) {
+export async function useNgrok (config: PortlessConfig, disableTls: boolean = false) {
   let tunnels: TunnelConfig[] = []
   let restarting = false
 
@@ -26,7 +26,8 @@ export async function useNgrok (config: PortlessConfig) {
     const keyFile = path.resolve(certDir, 'privkey.pem')
     const certFile = path.resolve(certDir, 'cert.pem')
 
-    const useHttps = fs.existsSync(keyFile) && fs.existsSync(certFile)
+    const useTls = !disableTls && fs.existsSync(keyFile) && fs.existsSync(certFile)
+    consola.info('NGROK tls enabled:', useTls ? 'Yes' : 'No')
 
     tunnels.push(tunnel)
 
@@ -34,7 +35,7 @@ export async function useNgrok (config: PortlessConfig) {
       const url = await ngrok.connect({
         authtoken: config.ngrok.authtoken,
         region: config.ngrok.region,
-        ...useHttps ? {
+        ...useTls ? {
           proto: 'tls',
           addr: getDomain(tunnel.targetDomain),
           key: keyFile,
@@ -50,7 +51,7 @@ export async function useNgrok (config: PortlessConfig) {
       return {
         ...tunnel,
         ngrokUrl: url,
-        useHttps,
+        useTls,
       }
     } catch (e) {
       consola.error(e)

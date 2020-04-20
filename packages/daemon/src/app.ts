@@ -15,7 +15,7 @@ export class App {
     this.config = await loadConfig(cwd)
     this.greenlock = await useGreenlock(this.config)
     if (this.config.ngrok) {
-      this.ngrok = await useNgrok(this.config)
+      this.ngrok = await useNgrok(this.config, this.greenlock?.needsRenewing)
     }
     this.reverseProxy = await useReverseProxy(this.config, {
       publicKeyId: this.greenlock ? this.greenlock.publicKeyId : undefined,
@@ -29,7 +29,7 @@ export class App {
             targetDomain: process.env.PORTLESS_DAEMON_URL as string,
           })
           if (result) {
-            forceHttps(domainConfig.public, result.useHttps)
+            forceHttps(domainConfig.public, result.useTls)
           }
         }
       }
