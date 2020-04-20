@@ -1,6 +1,6 @@
 {
   "name": "@portless/daemon",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "description": "(Background daemon) Easy local domains and reverse proxy with HTTPS support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -27,7 +27,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@portless/config": "^0.4.1",
+    "@portless/config": "^0.4.9",
     "@portless/global-config": "^0.4.3",
     "@portless/template": "^0.4.0",
     "@portless/util": "^0.4.3",
