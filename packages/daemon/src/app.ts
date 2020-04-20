@@ -9,13 +9,15 @@ export class App {
   config: PortlessConfig
   greenlock: UseGreenlock
   reverseProxy: UseReverseProxy
-  ngrok: UseNgrok
+  ngrok: UseNgrok | null
 
   async start (cwd: string) {
     this.config = await loadConfig(cwd)
     this.greenlock = await useGreenlock(this.config)
     if (this.config.ngrok) {
       this.ngrok = await useNgrok(this.config, this.greenlock?.needsRenewing)
+    } else {
+      this.ngrok = null
     }
     this.reverseProxy = await useReverseProxy(this.config, {
       publicKeyId: this.greenlock ? this.greenlock.publicKeyId : undefined,
@@ -37,7 +39,7 @@ export class App {
 
     if (this.greenlock && this.ngrok) {
       this.greenlock.onCertificateIssued(() => {
-        this.ngrok.restartTunnels()
+        this.ngrok?.restartTunnels()
       })
     }
 

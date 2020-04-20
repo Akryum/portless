@@ -32,7 +32,7 @@ export async function useGreenlock (config: PortlessConfig) {
     altnames: secureDomains,
   }
 
-  const certificateIssuedCallbacks: Function[] = []
+  let certificateIssuedCallbacks: Function[] = []
 
   const greenlock = Greenlock.create({
     configDir,
@@ -111,6 +111,7 @@ export async function useGreenlock (config: PortlessConfig) {
 
   function onCertificateIssued (callback: Function) {
     certificateIssuedCallbacks.push(callback)
+    certificateIssuedCallbacks = []
   }
 
   return {

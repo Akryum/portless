@@ -35,7 +35,9 @@ export interface NgrokConfig {
 }
 
 export async function loadConfig (cwd: string = process.cwd()): Promise<PortlessConfig> {
-  const configExplorer = cosmiconfig('portless')
+  const configExplorer = cosmiconfig('portless', {
+    cache: false,
+  })
   const result = await configExplorer.search(cwd)
   if (!result || result.isEmpty) {
     throw new Error('No portless config found')
