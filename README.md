@@ -148,3 +148,7 @@ For example, if the request is made from `https://webpack.acme.local`, it will r
 ```js
 fetch('https://graphql.acme.local')
 ```
+
+## Sponsors
+
+[![sponsors logos](https://guillaume-chau.info/sponsors.png)](https://guillaume-chau.info/sponsors)
