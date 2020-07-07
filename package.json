@@ -10,13 +10,14 @@
   ],
   "scripts": {
     "build": "rimraf ./packages/*/dist ./packages/*.tsbuildinfo && lerna run build",
-    "dev": "tsc --build ./tsconfig.build.json --watch"
+    "dev": "tsc --build ./tsconfig.build.json --watch",
+    "lint": "eslint packages --fix --ext .js,.ts"
   },
   "devDependencies": {
-    "@types/node": "^13.0.0",
-    "@typescript-eslint/eslint-plugin": "^2.0.0",
-    "@typescript-eslint/parser": "^2.14.0",
-    "eslint": "^6.0.0",
+    "@types/node": "^14.0.0",
+    "@typescript-eslint/eslint-plugin": "^3.6.0",
+    "@typescript-eslint/parser": "^3.6.0",
+    "eslint": "^7.4.0",
     "eslint-config-standard": "^14.0.0",
     "eslint-plugin-import": "^2.0.0",
     "eslint-plugin-node": "^11.0.0",
