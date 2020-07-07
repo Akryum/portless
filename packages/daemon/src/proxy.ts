@@ -238,6 +238,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
         }
 
         if (Array.isArray(req.headers.origin)) {
+          // @ts-ignore
           req.headers.origin = req.headers.origin.map(value => replace(value))
         } else if (req.headers.origin) {
           req.headers.origin = replace(req.headers.origin)
