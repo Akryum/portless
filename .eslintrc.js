@@ -4,7 +4,6 @@ module.exports = {
   parserOptions: {
     project: [
       './tsconfig.json',
-      './packages/**/tsconfig.json',
     ],
   },
   extends: [

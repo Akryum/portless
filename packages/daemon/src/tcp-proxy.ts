@@ -17,7 +17,7 @@ export function proxy (source: Socket, targetPort: number) {
   source.write(
     'HTTP/1.1 200 Connection Established\r\n' +
     'Proxy-agent: Portless\r\n' +
-    '\r\n'
+    '\r\n',
   )
 
   return target

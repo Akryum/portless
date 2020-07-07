@@ -11,12 +11,12 @@ export async function getCertificates () {
     consola.info(`Reading self-signed certificate in ${rcFolder}`)
     return {
       key: await fs.readFile(keyFile, 'utf-8'),
-      cert: await fs.readFile(certFile, 'utf-8')
+      cert: await fs.readFile(certFile, 'utf-8'),
     }
   } else {
     consola.info(`Generating self-signed certificate in ${rcFolder}`)
     const pems = selfsigned.generate([{ name: 'commonName', value: 'portless' }], {
-      days: 365
+      days: 365,
     })
     await fs.writeFile(keyFile, pems.private, 'utf-8')
     await fs.writeFile(certFile, pems.cert, 'utf-8')

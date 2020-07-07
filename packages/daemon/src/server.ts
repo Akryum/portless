@@ -73,7 +73,7 @@ export async function startServer () {
       consola.error(`VHost ${vhost} not found`)
       res.status(500)
       res.setHeader('Content-Type', 'text/html; charset=utf-8')
-      res.send(renderTemplate(path.resolve(__dirname, `../templates/vhost-not-found.ejs`), {
+      res.send(renderTemplate(path.resolve(__dirname, '../templates/vhost-not-found.ejs'), {
         host: vhost,
       }))
       res.end()
@@ -110,7 +110,7 @@ export async function startServer () {
   app.post('/api/apps', async (req, res) => {
     let app = getAppByCwd(req.body.cwd)
     if (app) {
-      consola.error(`App already exists`, req.body.cwd)
+      consola.error('App already exists', req.body.cwd)
       res.status(500).json({ error: 'App already exists' })
       return
     }
@@ -126,7 +126,7 @@ export async function startServer () {
   app.post('/api/apps/restart', async (req, res) => {
     const app = getAppByCwd(req.body.cwd)
     if (!app) {
-      consola.error(`App not found`, req.body.cwd)
+      consola.error('App not found', req.body.cwd)
       res.status(404).json({ error: 'App not found' })
       return
     }
@@ -151,9 +151,9 @@ export async function startServer () {
   app.use((req, res) => {
     res.status(404)
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
-    res.send(renderTemplate(path.resolve(__dirname, `../templates/error.ejs`), {
-      errorMessage: `Not found`,
-      errorStack: `${req.protocol}://${host}${req.path}`
+    res.send(renderTemplate(path.resolve(__dirname, '../templates/error.ejs'), {
+      errorMessage: 'Not found',
+      errorStack: `${req.protocol}://${host}${req.path}`,
     }))
     res.end()
   })
@@ -174,7 +174,7 @@ export async function startServer () {
   })
 
   server.on('connect', (req: IncomingMessage, socket: Socket, head: any) => {
-    const  result = /([\w.:_-]+):(\d+)/.exec(req.url || req.headers.host || '')
+    const result = /([\w.:_-]+):(\d+)/.exec(req.url || req.headers.host || '')
     if (result) {
       if (result[2] === '443') {
         proxy(socket, port + 1)
@@ -182,7 +182,7 @@ export async function startServer () {
       }
     }
 
-    socket.write(`Error: no handler`)
+    socket.write('Error: no handler')
     socket.end()
   })
 
@@ -193,7 +193,6 @@ export async function startServer () {
       if (proxy) {
         consola.log(`(ws) ${host}${req.url}`, chalk.cyan('PROXY'), proxy.targetDomain)
         proxy.wsMiddleware(req, socket, head)
-        return
       }
     }
   })

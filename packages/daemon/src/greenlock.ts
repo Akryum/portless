@@ -18,7 +18,7 @@ export async function useGreenlock (config: PortlessConfig) {
       }
     }
   }
-  
+
   if (!secureDomains.length) {
     consola.warn('No public or local domains defined.')
     return null
@@ -67,8 +67,8 @@ export async function useGreenlock (config: PortlessConfig) {
         consola.success(chalk.green('Certificate issued'), details)
         certificateIssuedCallbacks.forEach(cb => cb())
       } else if (event === 'cert_renewal') {
-        consola.success(chalk.green("Certificate renewed"), details);
-        certificateIssuedCallbacks.forEach((cb) => cb());
+        consola.success(chalk.green('Certificate renewed'), details)
+        certificateIssuedCallbacks.forEach((cb) => cb())
       } else {
         consola.info(chalk.blue(event), details)
       }

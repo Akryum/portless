@@ -11,7 +11,7 @@ export interface TunnelConfig {
   targetDomain: string
 }
 
-export async function useNgrok (config: PortlessConfig, disableTls: boolean = false) {
+export async function useNgrok (config: PortlessConfig, disableTls = false) {
   let tunnels: TunnelConfig[] = []
   let restarting = false
 

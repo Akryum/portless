@@ -67,7 +67,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
       consola.error(`A proxy targetting ${targetDomain} is already defined`)
       return
     }
-      
+
     const proxy = httpProxy.createProxyServer({
       target: `http://${targetDomain}`,
       agent: pacProxyAgent,
@@ -202,7 +202,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
           return _writeHead(...args)
         }
 
-        let rawBody: string = ''
+        let rawBody = ''
         const _write = res.write.bind(res)
         res.write = (data: string | Buffer) => {
           let text: string
@@ -228,7 +228,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
 
     const wsMiddleware = (req: IncomingMessage, socket: any, head: any) => {
       const replacer = getReplacer(req, publicToTarget, localToTarget)
-      
+
       if (replacer) {
         const secure = isSecure(req)
         const replace = replacer.getReplace(secure)

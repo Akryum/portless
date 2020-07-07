@@ -40,7 +40,7 @@ export async function stopDaemon () {
   try {
     await post('/api/stop')
   } catch (e) {
-    consola.warn(`Daemon server doesn't seem to be live`)
+    consola.warn('Daemon server doesn\'t seem to be live')
   }
   startup.remove('portless')
   consola.info('Stopped')
