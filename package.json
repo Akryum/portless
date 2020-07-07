@@ -11,7 +11,8 @@
   "scripts": {
     "build": "rimraf ./packages/*/dist ./packages/*.tsbuildinfo && lerna run build",
     "dev": "tsc --build ./tsconfig.build.json --watch",
-    "lint": "eslint packages --fix --ext .js,.ts"
+    "lint": "eslint packages --fix --ext .js,.ts",
+    "start": "node -e \"require('./packages/daemon/dist').startServer()\""
   },
   "devDependencies": {
     "@types/node": "^14.0.0",
