@@ -54,14 +54,12 @@ export async function startServer () {
       const proxy = getProxy(vhost)
       if (proxy) {
         // Acme challenge to issue certificates
-        if (proxy.publicKeyId) {
-          if (req.url && req.url.startsWith(acmeChallengePath)) {
-            const id = req.url.substr(acmeChallengePath.length)
-            consola.log(chalk.green('Certificate ACME challenge', `${vhost}${req.url}`))
-            res.write(`${id}.${proxy.publicKeyId}`)
-            res.end()
-            return
-          }
+        if (proxy.publicKeyId && req.url && req.url.startsWith(acmeChallengePath)) {
+          const id = req.url.substr(acmeChallengePath.length)
+          consola.log(chalk.green('Certificate ACME challenge', `${vhost}${req.url}`))
+          res.write(`${id}.${proxy.publicKeyId}`)
+          res.end()
+          return
         }
 
         consola.log(`${req.protocol}://${vhost}${req.path}`, chalk.cyan('PROXY'), proxy.targetDomain)
