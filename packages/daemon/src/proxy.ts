@@ -29,14 +29,17 @@ const noReplaceReg = /\.(png|jpe?g|gif|webp|svg|mp4|webm|ogg|mp3|wav|flac|aac|wo
 
 const forceHttpsMap: { [key: string]: boolean } = {}
 
+type UrlMap = { [key: string]: string[] }
+
 class Replacer {
   regValues: string[] = []
   reg: RegExp
-  map: { [key: string]: string } = {}
+  map: UrlMap = {}
 
   add (fromUrl: string, toUrl: string) {
     this.regValues.push(escapeReg(fromUrl))
-    this.map[fromUrl] = toUrl
+    const mapUrls = this.map[fromUrl] = this.map[fromUrl] || []
+    mapUrls.push(toUrl)
   }
 
   build () {
@@ -44,12 +47,28 @@ class Replacer {
     this.reg = new RegExp(`((http|ws)s?://)?(${dedupedValues.join('|')})`, 'g')
   }
 
-  getReplace (secure: boolean) {
+  getReplace (req: IncomingMessage) {
     if (!this.reg) this.build()
+
+    const secure = isSecure(req)
+
+    // Put req host first (it has priority)
+    const map: UrlMap = {}
+    for (const key in this.map) {
+      const list = this.map[key].slice()
+      if (req.headers.host) {
+        const index = list.indexOf(req.headers.host)
+        if (index !== -1) {
+          list.splice(index, 1)
+          list.unshift(req.headers.host)
+        }
+      }
+      map[key] = list
+    }
 
     const replaceFn = (matched: string, g1: string, g2: string, g3: string) => {
       const proto = g1 ? `${g2}${secure ? 's' : ''}://` : ''
-      return `${proto}${this.map[g3]}`
+      return `${proto}${map[g3][0]}`
     }
     return (text: string) => text.replace(this.reg, replaceFn)
   }
@@ -166,9 +185,8 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
       if (replacer && cookieReplacer) {
         // @TODO shouldRewrite was removed because `writeHead` is called after writting for some reason
 
-        const secure = isSecure(req)
-        const replace = replacer.getReplace(secure)
-        const replaceCookie = cookieReplacer.getReplace(secure)
+        const replace = replacer.getReplace(req)
+        const replaceCookie = cookieReplacer.getReplace(req)
 
         const _writeHead = res.writeHead.bind(res)
         res.writeHead = (...args: any) => {
@@ -230,8 +248,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
       const replacer = getReplacer(req, publicToTarget, localToTarget)
 
       if (replacer) {
-        const secure = isSecure(req)
-        const replace = replacer.getReplace(secure)
+        const replace = replacer.getReplace(req)
 
         if (req.headers.host) {
           req.headers.host = replace(req.headers.host)
