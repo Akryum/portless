@@ -93,6 +93,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
       changeOrigin: true,
       secure: false,
       ws: true,
+      xfwd: true,
     })
 
     proxy.on('error', (err, req, res) => {
