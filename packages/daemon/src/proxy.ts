@@ -129,6 +129,9 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
         // Replace urls
         if (domainConfig.public) {
           targetToPublic.add(domainConfig.target, domainConfig.public)
+          if (domainConfig.local) { 
+            targetToPublic.add(domainConfig.local, domainConfig.public)
+          }
           publicToTarget.add(domainConfig.public, domainConfig.target)
           // Cookie domains
           cookieTargetToPublic.add(
