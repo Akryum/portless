@@ -83,7 +83,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
 
   async function proxyTarget (targetDomain: string) {
     if (proxies.some(p => p.targetDomain === targetDomain)) {
-      consola.error(`A proxy targetting ${targetDomain} is already defined`)
+      consola.error(`A proxy targeting ${targetDomain} is already defined`)
       return
     }
 
@@ -106,10 +106,11 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
           errorMessage = `Can't find host <b>${errorMessage.substr('getaddrinfo ENOTFOUND'.length + 1)}</b>`
         }
 
-        res.end(renderTemplate(path.resolve(__dirname, '../templates/error.ejs'), {
+        res.write(renderTemplate(path.resolve(__dirname, '../templates/error.ejs'), {
           errorMessage,
           errorStack: err.stack,
         }))
+        res.end()
       } catch (e) {
         consola.error(e)
       }
