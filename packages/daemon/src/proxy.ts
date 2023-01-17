@@ -103,12 +103,14 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
         })
         let errorMessage = err.message
         if (errorMessage.startsWith('getaddrinfo ENOTFOUND')) {
-          errorMessage = `Can't find host <b>${errorMessage.substr('getaddrinfo ENOTFOUND'.length + 1)}</b>`
+          errorMessage = `Can't find host <b>${errorMessage.substring('getaddrinfo ENOTFOUND'.length + 1)}</b>`
+        } else if (errorMessage.startsWith('connect ECONNREFUSED')) {
+          errorMessage = `Unable to connect to <b>${errorMessage.substring('connect ECONNREFUSED'.length + 1)}</b><br>${errorMessage}`
         }
 
         res.write(renderTemplate(path.resolve(__dirname, '../templates/error.ejs'), {
           errorMessage,
-          errorStack: err.stack,
+          errorStack: `${err.stack}\n${JSON.stringify(err, null, 2)}`,
         }))
         res.end()
       } catch (e) {
