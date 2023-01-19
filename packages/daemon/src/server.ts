@@ -54,7 +54,7 @@ export async function startServer () {
 
   app.use((req, res, next) => {
     const vhost = req.get('host')
-    if (vhost && vhost !== `${host}:${port}`) {
+    if (vhost && !vhost.endsWith(`:${port}`)) {
       const proxy = getProxy(vhost)
       if (proxy) {
         // Acme challenge to issue certificates
