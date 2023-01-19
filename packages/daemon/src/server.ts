@@ -33,15 +33,13 @@ export async function startServer () {
   // @ts-ignore
   process.env.PORTLESS_DAEMON_PORT = port
 
-  let host = config.host || 'localhost'
-  // Listen on all interfaces if host is localhost
-  if (host === 'localhost') {
-    host = '0.0.0.0'
-  }
+  const host = config.host || 'localhost'
   // @ts-ignore
   process.env.PORTLESS_DAEMON_HOST = port
 
-  const serverUrl = `http://${host}:${port}`
+  // Listen on all interfaces if host is localhost
+  const serverHost = host === 'localhost' ? '0.0.0.0' : host
+  const serverUrl = `http://${serverHost}:${port}`
   // @ts-ignore
   process.env.PORTLESS_DAEMON_URL = serverUrl
 
@@ -161,7 +159,7 @@ export async function startServer () {
   })
 
   const server = http.createServer(app)
-  server.listen(port, host, async () => {
+  server.listen(port, serverHost, async () => {
     consola.info('Daemon server listening on', serverUrl)
 
     await restoreApps()
