@@ -33,7 +33,11 @@ export async function startServer () {
   // @ts-ignore
   process.env.PORTLESS_DAEMON_PORT = port
 
-  const host = config.host || 'localhost'
+  let host = config.host || 'localhost'
+  // Listen on all interfaces if host is localhost
+  if (host === 'localhost') {
+    host = '0.0.0.0'
+  }
   // @ts-ignore
   process.env.PORTLESS_DAEMON_HOST = port
 
