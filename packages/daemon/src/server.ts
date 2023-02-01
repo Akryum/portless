@@ -200,7 +200,7 @@ export async function startServer () {
   // HTTPS
   const httpsProxy = httpProxy.createProxyServer({
     target: {
-      host,
+      host: serverHost,
       port,
     },
     ssl: await getCertificates(),
