@@ -29,6 +29,12 @@ cli.command('stop', 'Stop Daemon')
     await stopDaemon()
   })
 
+cli.command('restart', 'Restart Daemon')
+  .action(async () => {
+    await startDaemon()
+    await stopDaemon()
+  })
+
 cli.command('add', 'Add project in current folder')
   .action(async () => {
     await addApp(process.cwd())
