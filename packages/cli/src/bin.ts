@@ -5,6 +5,7 @@ import updateCheck from 'update-check'
 import consola from 'consola'
 import { startDaemon, stopDaemon } from './daemon'
 import { addApp, removeApp, restartApp } from './app'
+import { tailLogs } from './logs.js'
 
 process.env.NODE_ENV = 'production'
 
@@ -41,6 +42,11 @@ cli.command('remove', 'Remove project in current folder')
 cli.command('refresh', 'Restart project in current folder')
   .action(async () => {
     await restartApp(process.cwd())
+  })
+
+cli.command('logs', 'Display the daemon logs and watch for new log messages')
+  .action(() => {
+    tailLogs()
   })
 
 cli.help()
