@@ -310,7 +310,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
         } else {
           domainMap[domain] = proxy
           proxy.incomingDomains.push({ domain, type })
-          consola.log('[proxy]', chalk.cyan('HTTP'), chalk.bold(domain), '⇒', chalk.blue.bold(domainConfig.target))
+          consola.log('[proxy]', chalk.cyan('HTTP'), chalk.bold(domain), '⇒ ', chalk.blue.bold(domainConfig.target))
         }
       }
     }

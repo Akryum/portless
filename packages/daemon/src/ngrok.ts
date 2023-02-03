@@ -47,7 +47,7 @@ export async function useNgrok (config: PortlessConfig, disableTls = false) {
         },
         hostname: tunnel.publicDomain,
       })
-      consola.log('[proxy]', chalk.magenta('NGROK'), chalk.bold(url), '⇒', chalk.blue.bold(tunnel.targetDomain))
+      consola.log('[proxy]', chalk.magenta('NGROK'), chalk.bold(url), '⇒ ', chalk.blue.bold(tunnel.targetDomain))
       return {
         ...tunnel,
         ngrokUrl: url,
