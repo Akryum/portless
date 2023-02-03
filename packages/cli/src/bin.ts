@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 
 import cac from 'cac'
+import updateCheck from 'update-check'
+import consola from 'consola'
 import { startDaemon, stopDaemon } from './daemon'
 import { addApp, removeApp, restartApp } from './app'
 
 process.env.NODE_ENV = 'production'
+
+const pkg = require('../package.json')
 
 const cli = cac()
 
@@ -40,5 +44,14 @@ cli.command('refresh', 'Restart project in current folder')
   })
 
 cli.help()
-cli.version(require('../package.json').version)
+cli.version(pkg.version)
 cli.parse()
+
+// Check for updates
+updateCheck(pkg).then((update) => {
+  if (update) {
+    consola.info(`Update available: ${update.latest} (current: ${pkg.version})\nRun \`npm i -g ${pkg.name}\`, \`yarn global add ${pkg.name}\`, or \`pnpm i -g ${pkg.name}\` to update`)
+  }
+}).catch(e => {
+  // noop
+})

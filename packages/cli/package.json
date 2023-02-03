@@ -37,6 +37,7 @@
     "consola": "^2.11.3",
     "fs-extra": "^8.1.0",
     "node-fetch": "^2.6.0",
+    "update-check": "^1.5.4",
     "user-startup": "^0.2.2"
   },
   "devDependencies": {
