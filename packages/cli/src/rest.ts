@@ -15,7 +15,7 @@ export async function rest (method: string, url: string, options: RequestInit = 
   })
   if (!result.ok) {
     const { error } = await result.json()
-    consola.error(error)
+    consola.error(`[cli] Error sending message to service:`, error)
     return
   }
   return result.json()

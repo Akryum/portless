@@ -32,7 +32,7 @@ export async function startDaemon () {
     port = await checkPortFile(requestVersion)
   }
 
-  consola.info(`Started http://${host}:${port}`)
+  consola.info(`[cli] Started http://${host}:${port}`)
 }
 
 // Stop daemon
@@ -40,10 +40,10 @@ export async function stopDaemon () {
   try {
     await post('/api/stop')
   } catch (e) {
-    consola.warn('Daemon server doesn\'t seem to be live')
+    consola.warn('[cli] Daemon server doesn\'t seem to be live')
   }
   startup.remove('portless')
-  consola.info('Stopped')
+  consola.info('[cli] Stopped')
 }
 
 async function checkServerIsLive (port: number, host: string) {

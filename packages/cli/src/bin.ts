@@ -50,7 +50,7 @@ cli.parse()
 // Check for updates
 updateCheck(pkg).then((update) => {
   if (update) {
-    consola.info(`Update available: ${update.latest} (current: ${pkg.version})\nRun \`npm i -g ${pkg.name}\`, \`yarn global add ${pkg.name}\`, or \`pnpm i -g ${pkg.name}\` to update`)
+    consola.info(`[cli] Update available: ${update.latest} (current: ${pkg.version})\nRun \`npm i -g ${pkg.name}\`, \`yarn global add ${pkg.name}\`, or \`pnpm i -g ${pkg.name}\` to update`)
   }
 }).catch(e => {
   // noop

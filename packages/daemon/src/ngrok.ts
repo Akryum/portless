@@ -27,7 +27,7 @@ export async function useNgrok (config: PortlessConfig, disableTls = false) {
     const certFile = path.resolve(certDir, 'cert.pem')
 
     const useTls = !disableTls && fs.existsSync(keyFile) && fs.existsSync(certFile)
-    consola.info('NGROK tls enabled:', useTls ? 'Yes' : 'No')
+    consola.info('[ngrok] tls enabled:', useTls ? 'Yes' : 'No')
 
     tunnels.push(tunnel)
 
@@ -47,14 +47,14 @@ export async function useNgrok (config: PortlessConfig, disableTls = false) {
         },
         hostname: tunnel.publicDomain,
       })
-      consola.log(chalk.magenta('NGROK'), chalk.bold(url), '⇒', chalk.blue.bold(tunnel.targetDomain))
+      consola.log('[proxy]', chalk.magenta('NGROK'), chalk.bold(url), '⇒', chalk.blue.bold(tunnel.targetDomain))
       return {
         ...tunnel,
         ngrokUrl: url,
         useTls,
       }
     } catch (e) {
-      consola.error(e)
+      consola.error(`[ngrok]`, e)
     }
   }
 
@@ -67,7 +67,7 @@ export async function useNgrok (config: PortlessConfig, disableTls = false) {
     if (restarting) return
     restarting = true
 
-    consola.info('Restarting Ngrok tunnels with new certificate...')
+    consola.info('[ngrok] Restarting Ngrok tunnels with new certificate...')
 
     const lastTunnels = tunnels.slice()
     await stopTunnels()

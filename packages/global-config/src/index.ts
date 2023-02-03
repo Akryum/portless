@@ -39,8 +39,8 @@ const schema = joi.object({
 async function validateConfig (data: any) {
   const { error } = schema.validate(data)
   if (error) {
-    consola.error(`Global config error (${globalConfigFile}):`, error)
-    consola.info(`Overriding with default config, backed up to ${globalConfigFile}.bak`)
+    consola.error(`[config] Global config error (${globalConfigFile}):`, error)
+    consola.info(`[config] Overriding with default config, backed up to ${globalConfigFile}.bak`)
     await fs.writeJson(`${globalConfigFile}.bak`, data, {
       spaces: 2,
     })

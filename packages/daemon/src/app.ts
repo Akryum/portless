@@ -43,7 +43,7 @@ export class App {
       })
     }
 
-    consola.success(`App ${this.config.projectName} started`)
+    consola.success(`[daemon] Service fo app ${this.config.projectName} started`)
   }
 
   async stop () {
@@ -59,7 +59,7 @@ export class App {
       await this.reverseProxy.destroy()
     }
 
-    consola.success(`App ${this.config.projectName} stopped`)
+    consola.success(`[daemon] Service fo app ${this.config.projectName} stopped`)
   }
 }
 

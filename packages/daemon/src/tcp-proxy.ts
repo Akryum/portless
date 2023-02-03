@@ -6,7 +6,7 @@ export function proxy (source: Socket, targetPort: number) {
   source.pipe(target).pipe(source)
 
   const handleError = (err: Error) => {
-    consola.error('TCP Proxy - Error', err)
+    consola.error('[tcp-proxy] Error:', err)
     source.destroy()
     target.destroy()
   }

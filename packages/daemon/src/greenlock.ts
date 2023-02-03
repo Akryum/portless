@@ -20,7 +20,7 @@ export async function useGreenlock (config: PortlessConfig) {
   }
 
   if (!secureDomains.length) {
-    consola.warn('No public or local domains defined.')
+    consola.warn('[greenlock] No public or local domains defined.')
     return null
   }
 
@@ -42,35 +42,35 @@ export async function useGreenlock (config: PortlessConfig) {
     staging: greenlockConfig.staging,
     notify: (event: string, details: any) => {
       if (event === 'error') {
-        consola.error(details)
+        consola.error(`[greenlock]`, details)
       } else if (event === 'warning') {
-        consola.warn(details)
+        consola.warn(`[greenlock]`, details)
       } else if (event === 'certificate_order') {
-        consola.info('Ordering certificate...', details.subject, details.altnames)
+        consola.info('[greenlock] Ordering certificate...', details.subject, details.altnames)
       } else if (event === 'challenge_select') {
-        consola.info('Challenging', details.altname)
+        consola.info('[greenlock] Challenging', details.altname)
       } else if (event === 'challenge_status') {
         if (details.status === 'pending') {
-          consola.info('Challenge pending', details.altname)
+          consola.info('[greenlock] Challenge pending', details.altname)
         } else if (details.status === 'valid') {
-          consola.success(chalk.green('Challenge valid'), details.altname)
+          consola.success('[greenlock]', chalk.green('Challenge valid'), details.altname)
         } else {
-          consola.info('Challenge status', details)
+          consola.info('[greenlock] Challenge status', details)
         }
       } else if (event === 'certificate_status') {
         if (details.status === 'valid') {
-          consola.success(chalk.green('Certificate valid'), details.subject)
+          consola.success('[greenlock]', chalk.green('Certificate valid'), details.subject)
         } else {
-          consola.info('Challenge status', details)
+          consola.info('[greenlock] Challenge status', details)
         }
       } else if (event === 'cert_issue') {
-        consola.success(chalk.green('Certificate issued'), details)
+        consola.success('[greenlock]', chalk.green('Certificate issued'), details)
         certificateIssuedCallbacks.forEach(cb => cb())
       } else if (event === 'cert_renewal') {
-        consola.success(chalk.green('Certificate renewed'), details)
+        consola.success('[greenlock]', chalk.green('Certificate renewed'), details)
         certificateIssuedCallbacks.forEach((cb) => cb())
       } else {
-        consola.info(chalk.blue(event), details)
+        consola.info('[greenlock]', chalk.blue(event), details)
       }
     },
   })
@@ -87,7 +87,7 @@ export async function useGreenlock (config: PortlessConfig) {
   const [siteData] = await greenlock._find({ subject: site.subject })
   if (siteData && siteData.renewAt < Date.now()) {
     needsRenewing = true
-    consola.info('Certificate needs to be renewed for site', site.subject)
+    consola.info('[greenlock] Certificate needs to be renewed for site', site.subject)
   }
 
   const accountFile = path.resolve(configDir, `accounts/acme${greenlockConfig.staging ? '-staging' : ''}-v02.api.letsencrypt.org/directory`, `${greenlockConfig.maintainerEmail}.json`)

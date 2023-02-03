@@ -58,19 +58,19 @@ export async function startServer () {
         // Acme challenge to issue certificates
         if (proxy.publicKeyId && req.url && req.url.startsWith(acmeChallengePath)) {
           const id = req.url.substr(acmeChallengePath.length)
-          consola.log(chalk.green('Certificate ACME challenge', `${vhost}${req.url}`))
+          consola.log('[greenlock]', chalk.green('Certificate ACME challenge', `${vhost}${req.url}`))
           res.write(`${id}.${proxy.publicKeyId}`)
           res.end()
           return
         }
 
-        consola.log(`${req.protocol}://${vhost}${req.path}`, chalk.cyan('PROXY'), proxy.targetDomain)
+        consola.log(`[proxy] ${req.protocol}://${vhost}${req.path}`, chalk.cyan('PROXY'), proxy.targetDomain)
         proxy.webMiddleware(req, res)
         return
       }
 
       // Host not found
-      consola.error(`VHost ${vhost} not found`)
+      consola.error(`[server] VHost ${vhost} not found`)
       res.status(500)
       res.setHeader('Content-Type', 'text/html; charset=utf-8')
       res.send(renderTemplate(path.resolve(__dirname, '../templates/vhost-not-found.ejs'), {
@@ -110,7 +110,7 @@ export async function startServer () {
   app.post('/api/apps', async (req, res) => {
     let app = getAppByCwd(req.body.cwd)
     if (app) {
-      consola.error('App already exists', req.body.cwd)
+      consola.error('[server] App already exists', req.body.cwd)
       res.status(500).json({ error: 'App already exists' })
       return
     }
@@ -126,7 +126,7 @@ export async function startServer () {
   app.post('/api/apps/restart', async (req, res) => {
     const app = getAppByCwd(req.body.cwd)
     if (!app) {
-      consola.error('App not found', req.body.cwd)
+      consola.error('[server] App not found', req.body.cwd)
       res.status(404).json({ error: 'App not found' })
       return
     }
@@ -160,7 +160,7 @@ export async function startServer () {
 
   const server = http.createServer(app)
   server.listen(port, serverHost, async () => {
-    consola.info('Daemon server listening on', serverUrl)
+    consola.info('[daemon] server listening on', serverUrl)
 
     await restoreApps()
 
@@ -191,7 +191,7 @@ export async function startServer () {
     if (host) {
       const proxy = getProxy(host)
       if (proxy) {
-        consola.log(`(ws) ${host}${req.url}`, chalk.cyan('PROXY'), proxy.targetDomain)
+        consola.log(`[proxy] ${host}${req.url}`, chalk.cyan('WEBSOCKET'), proxy.targetDomain)
         proxy.wsMiddleware(req, socket, head)
       }
     }
@@ -209,7 +209,8 @@ export async function startServer () {
   })
 
   httpsProxy.on('error', error => {
-    consola.error('Proxy error:', error.stack || error)
+    consola.error('[http-proxy]', error.stack || error)
+    consola.log(`[http-proxy] target: ${serverHost}:${port}`)
   })
 
   httpsProxy.listen(port + 1)

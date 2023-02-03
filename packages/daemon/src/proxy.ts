@@ -83,7 +83,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
 
   async function proxyTarget (targetDomain: string) {
     if (proxies.some(p => p.targetDomain === targetDomain)) {
-      consola.error(`A proxy targeting ${targetDomain} is already defined`)
+      consola.error(`[reverse-proxy] A proxy targeting ${targetDomain} is already defined`)
       return
     }
 
@@ -114,9 +114,9 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
         }))
         res.end()
       } catch (e) {
-        consola.error(e)
+        consola.error(`[reverse-proxy]`, e)
       }
-      consola.error(`Error proxying ${req.url}:`)
+      consola.error(`[reverse-proxy] Error proxying ${req.url}:`)
       consola.log(err.stack)
       consola.log({ ...err })
     })
@@ -297,7 +297,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
   for (const domainConfig of config.domains) {
     const proxy = proxies.find(p => p.targetDomain === domainConfig.target)
     if (!proxy) {
-      consola.error(`Proxy with target ${domainConfig.target} not found`)
+      consola.error(`[reverse-proxy] Proxy with target ${domainConfig.target} not found`)
       continue
     }
     const incoming = { public: domainConfig.public, local: domainConfig.local }
@@ -306,11 +306,11 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
       const domain = incoming[type]
       if (domain) {
         if (domainMap[domain]) {
-          consola.error(`Domain ${domain} is already mapped to a Proxy`)
+          consola.error(`[reverse-proxy] Domain ${domain} is already mapped to a Proxy`)
         } else {
           domainMap[domain] = proxy
           proxy.incomingDomains.push({ domain, type })
-          consola.log(chalk.cyan('PROXY'), chalk.bold(domain), '⇒', chalk.blue.bold(domainConfig.target))
+          consola.log('[proxy]', chalk.cyan('HTTP'), chalk.bold(domain), '⇒', chalk.blue.bold(domainConfig.target))
         }
       }
     }
