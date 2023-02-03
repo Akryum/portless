@@ -1,6 +1,6 @@
 {
   "name": "@portless/cli",
-  "version": "0.4.16",
+  "version": "0.4.17",
   "description": "Easy local domains and reverse proxy with HTTPS support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
