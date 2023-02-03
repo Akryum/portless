@@ -213,5 +213,6 @@ export async function startServer () {
     consola.log(`[http-proxy] target: ${serverHost}:${port}`)
   })
 
+  console.info(`[http-proxy] Starting on port ${port + 1}`)
   httpsProxy.listen(port + 1)
 }

@@ -24,6 +24,8 @@ export async function useGreenlock (config: PortlessConfig) {
     return null
   }
 
+  consola.info('[greenlock] Checking certificates for domains:', secureDomains.join(','))
+
   const configDir = path.resolve(config.projectRoot, greenlockConfig.configDir || 'greenlock-config')
   fs.ensureDirSync(configDir)
 
