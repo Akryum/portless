@@ -186,6 +186,12 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
     }
 
     const webMiddleware = (req: IncomingMessage, res: ServerResponse) => {
+      // Rewrite origin
+      const targetDomain = config.domains?.find(d => (d.local && req.headers.origin?.includes(d.local)) || (d.public && req.headers.origin?.includes(d.public)))?.target
+      if (targetDomain) {
+        req.headers.origin = `http://${targetDomain}`
+      }
+
       // Replace links
       const replacer = getReplacer(req, targetToPublic, targetToLocal)
       const cookieReplacer = getReplacer(req, cookieTargetToPublic, cookieTargetToLocal)
