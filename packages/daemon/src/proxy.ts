@@ -200,7 +200,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
         res.writeHead = (...args: any) => {
           const headers = (args.length > 2) ? args[2] : args[1]
 
-          // R<emove content-length heander since it will change
+          // Remove content-length header since it will change
           res.removeHeader('content-length')
           if (headers) {
             delete headers['content-length']
@@ -211,7 +211,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
           if (corsHeader && typeof corsHeader === 'string') {
             res.setHeader('access-control-allow-origin', replace(corsHeader))
           }
-          if (headers && headers['access-control-allow-origin']) {
+          if (headers?.['access-control-allow-origin']) {
             headers['access-control-allow-origin'] = replace(headers['access-control-allow-origin'])
           }
 
@@ -220,7 +220,7 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
           if (setCookie) {
             res.setHeader('set-cookie', setCookie.map(cookie => replaceCookie(cookie)))
           }
-          setCookie = headers && headers['set-cookie']
+          setCookie = headers?.['set-cookie']
           if (setCookie) {
             headers['set-cookie'] = setCookie.map(cookie => replaceCookie(cookie))
           }
@@ -228,23 +228,25 @@ export async function useReverseProxy (config: PortlessConfig, options: ReverseP
           return _writeHead(...args)
         }
 
-        let rawBody = ''
-        const _write = res.write.bind(res)
-        res.write = (data: string | Buffer) => {
-          let text: string
-          if (data instanceof Buffer) {
-            text = data.toString()
-          } else {
-            text = data
+        // Rewrite content
+        const accept = req?.headers.accept ?? ''
+        if (!accept.includes('event-stream')) {
+          let rawBody = ''
+          const _write = res.write.bind(res)
+          res.write = (data: string | Buffer) => {
+            if (data instanceof Buffer) {
+              rawBody += data.toString()
+            } else {
+              rawBody += data
+            }
+            return true
           }
-          rawBody += text
-          return true
-        }
 
-        const _end = res.end.bind(res)
-        res.end = () => {
-          _write(replace(rawBody))
-          _end()
+          const _end = res.end.bind(res)
+          res.end = () => {
+            _write(replace(rawBody))
+            _end()
+          }
         }
       }
 

@@ -1,4 +1,5 @@
 import http, { IncomingMessage } from 'http'
+import https from 'https'
 import httpProxy from 'http-proxy'
 import express from 'express'
 import bodyParser from 'body-parser'
@@ -13,8 +14,8 @@ import { renderTemplate } from '@portless/template'
 import { addApp, stopAllApps, restartApp, getAppByCwd, removeApp, restoreApps } from './app'
 import { getProxy } from './proxy'
 import { getCertificates } from './pem'
-import { proxy } from './tcp-proxy'
-import { Socket } from 'net'
+import { tcpProxy } from './tcp-proxy'
+import net from 'net'
 
 const acmeChallengePath = '/.well-known/acme-challenge/'
 
@@ -57,7 +58,7 @@ export async function startServer () {
       if (proxy) {
         // Acme challenge to issue certificates
         if (proxy.publicKeyId && req.url && req.url.startsWith(acmeChallengePath)) {
-          const id = req.url.substr(acmeChallengePath.length)
+          const id = req.url.substring(acmeChallengePath.length)
           consola.log('[greenlock]', chalk.green('Certificate ACME challenge', `${vhost}${req.url}`))
           res.write(`${id}.${proxy.publicKeyId}`)
           res.end()
@@ -103,7 +104,7 @@ export async function startServer () {
   app.post('/api/stop', async (req, res) => {
     await stopAllApps()
     res.json({ success: true })
-    server.close()
+    httpServer.close()
     process.exit(0)
   })
 
@@ -158,8 +159,49 @@ export async function startServer () {
     res.end()
   })
 
-  const server = http.createServer(app)
-  server.listen(port, serverHost, async () => {
+  const httpServer = http.createServer(app)
+
+  // Websocket
+  httpServer.on('upgrade', (req: IncomingMessage, socket: net.Socket, head: any) => {
+    const host = req.headers.host
+    if (host) {
+      const proxy = getProxy(host)
+      if (proxy) {
+        consola.log(`[proxy] ${host}${req.url}`, chalk.cyan('WEBSOCKET'), proxy.targetDomain)
+        proxy.wsMiddleware(req, socket, head)
+      }
+    }
+  })
+
+  // HTTPS
+
+  const httpsProxy = httpProxy.createProxyServer({
+    target: {
+      host: serverHost,
+      port,
+    },
+    ws: true,
+    xfwd: true,
+  })
+
+  httpsProxy.on('error', error => {
+    consola.error('[https-proxy]', error.stack || error)
+    consola.log(`[https-proxy] target: ${serverHost}:${port}`)
+  })
+
+  const httpsServer = https.createServer({
+    ...await getCertificates(),
+  }, (req, res) => {
+    httpsProxy.web(req, res)
+  })
+
+  httpsServer.listen(port + 1, serverHost, () => {
+    consola.info(`[https-proxy] Listening on port ${port + 1}`)
+  })
+
+  // Main network server
+
+  httpServer.listen(port, serverHost, async () => {
     consola.info('[daemon] server listening on', serverUrl)
 
     await restoreApps()
@@ -173,46 +215,13 @@ export async function startServer () {
     }
   })
 
-  server.on('connect', (req: IncomingMessage, socket: Socket, head: any) => {
+  httpServer.on('connect', (req: IncomingMessage, socket: net.Socket, head: any) => {
     const result = /([\w.:_-]+):(\d+)/.exec(req.url || req.headers.host || '')
     if (result) {
       if (result[2] === '443') {
-        proxy(socket, port + 1)
+        tcpProxy(socket, port + 1, head, req.url || req.headers.host || '')
         return
       }
     }
-
-    socket.write('Error: no handler')
-    socket.end()
   })
-
-  server.on('upgrade', (req: IncomingMessage, socket: Socket, head: any) => {
-    const host = req.headers.host
-    if (host) {
-      const proxy = getProxy(host)
-      if (proxy) {
-        consola.log(`[proxy] ${host}${req.url}`, chalk.cyan('WEBSOCKET'), proxy.targetDomain)
-        proxy.wsMiddleware(req, socket, head)
-      }
-    }
-  })
-
-  // HTTPS
-  const httpsProxy = httpProxy.createProxyServer({
-    target: {
-      host: serverHost,
-      port,
-    },
-    ssl: await getCertificates(),
-    ws: true,
-    xfwd: true,
-  })
-
-  httpsProxy.on('error', error => {
-    consola.error('[http-proxy]', error.stack || error)
-    consola.log(`[http-proxy] target: ${serverHost}:${port}`)
-  })
-
-  console.info(`[http-proxy] Starting on port ${port + 1}`)
-  httpsProxy.listen(port + 1)
 }

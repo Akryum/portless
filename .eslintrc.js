@@ -25,6 +25,7 @@ module.exports = {
     'comma-dangle': ['error', 'always-multiline'],
     // ts-ignore
     '@typescript-eslint/ban-ts-ignore': 1,
+    '@typescript-eslint/ban-ts-comment': 1,
     // semis
     '@typescript-eslint/member-delimiter-style': [2, {
       multiline: { delimiter: 'none' },
