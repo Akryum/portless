@@ -161,44 +161,6 @@ export async function startServer () {
 
   const httpServer = http.createServer(app)
 
-  // Websocket
-  httpServer.on('upgrade', (req: IncomingMessage, socket: net.Socket, head: any) => {
-    const host = req.headers.host
-    if (host) {
-      const proxy = getProxy(host)
-      if (proxy) {
-        consola.log(`[proxy] ${host}${req.url}`, chalk.cyan('WEBSOCKET'), proxy.targetDomain)
-        proxy.wsMiddleware(req, socket, head)
-      }
-    }
-  })
-
-  // HTTPS
-
-  const httpsProxy = httpProxy.createProxyServer({
-    target: {
-      host: serverHost,
-      port,
-    },
-    ws: true,
-    xfwd: true,
-  })
-
-  httpsProxy.on('error', error => {
-    consola.error('[https-proxy]', error.stack || error)
-    consola.log(`[https-proxy] target: ${serverHost}:${port}`)
-  })
-
-  const httpsServer = https.createServer({
-    ...await getCertificates(),
-  }, (req, res) => {
-    httpsProxy.web(req, res)
-  })
-
-  httpsServer.listen(port + 1, serverHost, () => {
-    consola.info(`[https-proxy] Listening on port ${port + 1}`)
-  })
-
   // Main network server
 
   httpServer.listen(port, serverHost, async () => {
@@ -223,5 +185,50 @@ export async function startServer () {
         return
       }
     }
+  })
+
+  // Websocket
+  httpServer.on('upgrade', (req: IncomingMessage, socket: net.Socket, head: any) => {
+    const host = req.headers.host
+    if (host) {
+      const proxy = getProxy(host)
+      if (proxy) {
+        consola.log(`[proxy] ${host}${req.url}`, chalk.cyan('WEBSOCKET'), proxy.targetDomain)
+        proxy.wsMiddleware(req, socket, head)
+      }
+    }
+  })
+
+  // HTTPS
+
+  const certs = await getCertificates()
+
+  const httpsProxy = httpProxy.createProxyServer({
+    target: {
+      host: serverHost,
+      port,
+    },
+    ws: true,
+    xfwd: true,
+    ssl: certs,
+  })
+
+  httpsProxy.on('error', error => {
+    consola.error('[https-proxy]', error.stack || error)
+    consola.log(`[https-proxy] target: ${serverHost}:${port}`)
+  })
+
+  const httpsServer = https.createServer({
+    ...certs,
+  }, (req, res) => {
+    httpsProxy.web(req, res)
+  })
+
+  httpsServer.on('upgrade', (req, socket, head) => {
+    httpsProxy.ws(req, socket, head)
+  })
+
+  httpsServer.listen(port + 1, serverHost, () => {
+    consola.info(`[https-proxy] Listening on port ${port + 1}`)
   })
 }
